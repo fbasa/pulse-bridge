@@ -2,6 +2,12 @@
 Event‑Driven Architecture (Quartz + MassTransit + RabbitMQ + SignalR + Redis)  
 Bridges scheduled "pulses" to API to client UIs in real time.
 
+PulseBridge.Web = 8080  
+PulseBridge.Api = 8081  
+PulseBridge.Scheduler = 8082  
+PulseBridge.Worker = 8083
+
+
 ## dockerfile
 When **dockerfile** already in place and configured, first step is to build the api image (execute command in same directory of **dockerfile**)
 
@@ -15,8 +21,8 @@ When **dockerfile** already in place and configured, first step is to build the 
 ```http://localhost:8080/```
 
 ## .env file 
-SA_PASSWORD=Really_Strong_Passw0rd!  
-DB_CONN=Server=sql;Database=AppDb;User ID=sa;Password=Really_Strong_Passw0rd!;TrustServerCertificate=true;  
+SA_PASSWORD=<Strong_Password>  
+DB_CONN=Server=sql;Database=AppDb;User ID=sa;Password=<Strong_Password>;TrustServerCertificate=true;  
 REDIS_CONN=redis:6379  
 
 (keep ```.env``` file out of source control)  

@@ -3,11 +3,26 @@
 name: pulse-bridge
 
 services:
-  api:
-    image: demo-api:1.0
-    container_name: demo-api
+  web:
+    build:
+      context: ./PulseBridge.Web         # <-- path to your Angular app folder
+      dockerfile: Dockerfile
+      args:
+        CONFIG: production           # optional: angular build config
+        BASE_HREF: /                 # optional: base href
+    image: pulse-bridge-web:1.0
+    container_name: pulse-bridge-web
     ports:
-      - "8080:8080"
+      - "8081:80"                    # browse SPA at http://localhost:8081
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    image: pulse-bridge-api:1.0
+    container_name: pulse-bridge-api
+    ports:
+      - "8080:8081"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       # Read from .env file below
@@ -20,7 +35,7 @@ services:
 
   sql:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: demo-sql
+    container_name: pulse-bridge-sql
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: ${SA_PASSWORD}
@@ -33,7 +48,7 @@ services:
 
   redis:
     image: redis:7.2
-    container_name: demo-redis
+    container_name: pulse-bridge-redis
     #ports:
       #- "6379:6379"   # same note: expose only if needed
     volumes:
