@@ -1,0 +1,45 @@
+﻿version: "3.9"
+
+name: pulse-bridge
+
+services:
+  api:
+    image: demo-api:1.0
+    container_name: demo-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Read from .env file below
+      ConnectionStrings__Default: ${DB_CONN}
+      Cache__ConnectionString: ${REDIS_CONN}
+    depends_on:
+      - sql
+      - redis
+    restart: unless-stopped
+
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: demo-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${SA_PASSWORD}
+      MSSQL_PID: "Developer"
+    #ports:
+      #- "1433:1433"   # only expose if you really need external access
+    volumes:
+      - mssqldata:/var/opt/mssql
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2
+    container_name: demo-redis
+    #ports:
+      #- "6379:6379"   # same note: expose only if needed
+    volumes:
+      - redisdata:/data
+    restart: unless-stopped
+
+volumes:
+  mssqldata:
+  redisdata:
