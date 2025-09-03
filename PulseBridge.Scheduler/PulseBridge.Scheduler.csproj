@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>86eb4bc7-3bf7-4f94-97ef-e837ed690a8a</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit" Version="8.5.2" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+    <PackageReference Include="Quartz" Version="3.15.0" />
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.15.0" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.0" />
+    <PackageReference Include="Quartz.Serialization.Json" Version="3.15.0" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PulseBridge.Contracts\PulseBridge.Contracts.csproj" />
+    <ProjectReference Include="..\PulseBridge.Infrastructure\PulseBridge.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

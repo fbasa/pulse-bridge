@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36408.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulseBridge.Api", "PulseBridge.Api\PulseBridge.Api.csproj", "{C9E860C1-D319-435B-AD1C-689CCF9F80CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulseBridge.Scheduler", "PulseBridge.Scheduler\PulseBridge.Scheduler.csproj", "{7532378F-0E3A-EAED-21F8-84500B5A00FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulseBridge.Worker", "PulseBridge.Worker\PulseBridge.Worker.csproj", "{443B26DB-886A-47E6-A085-957E75837278}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "PulseBridge.Web", "PulseBridge.Web\PulseBridge.Web.esproj", "{79906984-2F86-9389-3373-E9418603B764}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulseBridge.Infrastructure", "PulseBridge.Infrastructure\PulseBridge.Infrastructure.csproj", "{E120F432-FE8A-44CF-BAAB-9AAC49FEF56F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulseBridge.Contracts", "PulseBridge.Contracts\PulseBridge.Contracts.csproj", "{A7AD8C9E-1AE9-42FC-8A23-8A0334C20AFB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C9E860C1-D319-435B-AD1C-689CCF9F80CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9E860C1-D319-435B-AD1C-689CCF9F80CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9E860C1-D319-435B-AD1C-689CCF9F80CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9E860C1-D319-435B-AD1C-689CCF9F80CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7532378F-0E3A-EAED-21F8-84500B5A00FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7532378F-0E3A-EAED-21F8-84500B5A00FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7532378F-0E3A-EAED-21F8-84500B5A00FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7532378F-0E3A-EAED-21F8-84500B5A00FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{443B26DB-886A-47E6-A085-957E75837278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{443B26DB-886A-47E6-A085-957E75837278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{443B26DB-886A-47E6-A085-957E75837278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{443B26DB-886A-47E6-A085-957E75837278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79906984-2F86-9389-3373-E9418603B764}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79906984-2F86-9389-3373-E9418603B764}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79906984-2F86-9389-3373-E9418603B764}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{79906984-2F86-9389-3373-E9418603B764}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79906984-2F86-9389-3373-E9418603B764}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79906984-2F86-9389-3373-E9418603B764}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{E120F432-FE8A-44CF-BAAB-9AAC49FEF56F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E120F432-FE8A-44CF-BAAB-9AAC49FEF56F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E120F432-FE8A-44CF-BAAB-9AAC49FEF56F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E120F432-FE8A-44CF-BAAB-9AAC49FEF56F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7AD8C9E-1AE9-42FC-8A23-8A0334C20AFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7AD8C9E-1AE9-42FC-8A23-8A0334C20AFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7AD8C9E-1AE9-42FC-8A23-8A0334C20AFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7AD8C9E-1AE9-42FC-8A23-8A0334C20AFB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {07C4B429-9D4C-4531-8548-B971EA1110F4}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,6 @@
+@PulseBridge.Worker_HostAddress = http://localhost:5258
+
+GET {{PulseBridge.Worker_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
