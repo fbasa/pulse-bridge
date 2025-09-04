@@ -17,7 +17,7 @@ When **dockerfile** already in place and configured, first step is to build the 
 ```docker build -t pulse-bridge-scheduler:1.0 -f PulseBridge.Scheduler/Dockerfile .```  
 ```docker build -t pulse-bridge-worker:1.0 -f PulseBridge.Worker/Dockerfile .```  
 
-## build all images
+## build all images (docker-bake.hcl)
 ```docker buildx bake```  
 
 ## run container mapping host port 8080 -> container 8080
@@ -41,6 +41,12 @@ run all services define in docker-compose.yml file
 build and run all services define in docker-compose.yml file  
 ```docker compose up -d --build web api sheduler worker```
 
+# create database if it doesn't exist
+```docker exec sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Strong_Passw0rd!" -C -Q "IF DB_ID('AppDb') IS NULL CREATE DATABASE AppDb;"```
+
+# run database update inside container
+```docker run --rm --network myapp_default -v ${PWD}:/src -w /src mcr.microsoft.com/dotnet/sdk:9.0 dotnet ef database update```
+
 
 ## operational tips for on-prem
 
@@ -56,6 +62,5 @@ build and run all services define in docker-compose.yml file
   * **Single box**: Compose is fine for small/medium workloads.
   * **Multiple boxes/HA**: Move to **Kubernetes** (k3s is a lightweight on-prem favorite).
 
----
 
 
