@@ -6,7 +6,7 @@ x-env: &app-env
   ASPNETCORE_ENVIRONMENT: Development
   ASPNETCORE_URLS: http://0.0.0.0:8080
   # App settings (override via .env)
-  ConnectionStrings__Default: ${DB_CONN}
+  ConnectionStrings__QuartzNet: ${DB_CONN}
   Redis__ConnectionString: ${REDIS_CONN}
   MessageBroker__Host: rabbitmq
   MessageBroker__Username: ${RABBITMQ_USER}
@@ -92,7 +92,7 @@ services:
     environment:
       <<: *app-env
       Quartz__JobStore: AdoNet
-      Quartz__ConnectionString: ${DB_CONN}
+      ConnectionString__QuartzNet: ${DB_CONN}
     depends_on:
       - sql
       - rabbitmq
