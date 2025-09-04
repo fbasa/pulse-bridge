@@ -28,14 +28,10 @@ RUN rm -f /etc/nginx/conf.d/default.conf && \
   server_name _;\n\
   root /usr/share/nginx/html;\n\
   index index.html;\n\
-  # SPA fallback: send unmatched routes to index.html\n\
-  location / {\n\
-    try_files $uri $uri/ /index.html;\n\
-  }\n\
-  # Cache static assets aggressively (but not index.html)\n\
-  location ~* \\.(?:js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {\n\
+  location / { try_files $uri $uri/ /index.html; }\n\
+  location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {\n\
     expires 7d;\n\
-    add_header Cache-Control \"public, max-age=604800, immutable\";\n\
+    add_header Cache-Control "public, max-age=604800, immutable" always;\n\
   }\n\
 }\n' > /etc/nginx/conf.d/angular.conf
 
