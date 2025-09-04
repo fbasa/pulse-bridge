@@ -9,16 +9,33 @@ PulseBridge.Worker = 8083
 
 
 ## dockerfile
-When **dockerfile** already in place and configured, first step is to build the api image (execute command in solution root directory)
+When **dockerfile** already in place and configured, first step is to build images (execute command in solution root directory)  
+
+## build all images (docker-bake.hcl) except web
+```docker buildx bake```  
+This will create images for api, scheduler & worker  
+
+## build image for web  
+From solution root directory ```cd PulseBridge.Web``` then execute docker build  
+```docker build -t pulse-bridge-web:1.0 .```  
+
+
+## docker compose is to run images built
+When **docker-compose.yml** already in place and configured, you can run multiple containers (execute command in solution root directory)  
+run all services define in docker-compose.yml file  
+```docker compose up -d```  
+
 
 ## build individual image
-```docker build -t pulse-bridge-web:1.0 -f PulseBridge.Web/Dockerfile .```  
 ```docker build -t pulse-bridge-api:1.0 -f PulseBridge.Api/Dockerfile .```  
 ```docker build -t pulse-bridge-scheduler:1.0 -f PulseBridge.Scheduler/Dockerfile .```  
 ```docker build -t pulse-bridge-worker:1.0 -f PulseBridge.Worker/Dockerfile .```  
 
-## build all images (docker-bake.hcl)
-```docker buildx bake```  
+## create database if it doesn't exist
+```docker exec sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Strong_Passw0rd!" -C -Q "IF DB_ID('AppDb') IS NULL CREATE DATABASE AppDb;"```
+
+## run database update inside container
+```docker run --rm --network myapp_default -v ${PWD}:/src -w /src mcr.microsoft.com/dotnet/sdk:9.0 dotnet ef database update```
 
 ## run container mapping host port 8080 -> container 8080
 ```docker run -d --name pulse-bridge-api -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Production pulse-bridge-api:1.0```
@@ -32,20 +49,6 @@ DB_CONN=Server=sql;Database=AppDb;User ID=sa;Password=<Strong_Password>;TrustSer
 REDIS_CONN=redis:6379  
 
 (keep ```.env``` file out of source control)  
-
-
-## docker compose
-When **docker-compose.yml** already in place and configured, you can run multiple containers (execute command in solution root directory)  
-run all services define in docker-compose.yml file  
-```docker compose up -d```  
-build and run all services define in docker-compose.yml file  
-```docker compose up -d --build web api sheduler worker```
-
-# create database if it doesn't exist
-```docker exec sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Strong_Passw0rd!" -C -Q "IF DB_ID('AppDb') IS NULL CREATE DATABASE AppDb;"```
-
-# run database update inside container
-```docker run --rm --network myapp_default -v ${PWD}:/src -w /src mcr.microsoft.com/dotnet/sdk:9.0 dotnet ef database update```
 
 
 ## operational tips for on-prem
