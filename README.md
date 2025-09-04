@@ -11,11 +11,14 @@ PulseBridge.Worker = 8083
 ## dockerfile
 When **dockerfile** already in place and configured, first step is to build the api image (execute command in solution root directory)
 
-## build image
+## build individual image
 ```docker build -t pulse-bridge-web:1.0 -f PulseBridge.Web/Dockerfile .```  
 ```docker build -t pulse-bridge-api:1.0 -f PulseBridge.Api/Dockerfile .```  
 ```docker build -t pulse-bridge-scheduler:1.0 -f PulseBridge.Scheduler/Dockerfile .```  
 ```docker build -t pulse-bridge-worker:1.0 -f PulseBridge.Worker/Dockerfile .```  
+
+## build all images
+```docker buildx bake```  
 
 ## run container mapping host port 8080 -> container 8080
 ```docker run -d --name pulse-bridge-api -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Production pulse-bridge-api:1.0```

@@ -1,32 +1,59 @@
-# ---- Build stage -------------------------------------------------------------
-FROM node:20-alpine AS build
+# ---------- 1) Build stage ----------
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install deps first (better layer caching)
+# Install deps using lockfile (faster, reproducible)
 COPY package*.json ./
-
-# If you use pnpm/yarn, swap the install command accordingly
 RUN npm ci
 
-# Copy the rest and build
+# Copy source and build
 COPY . .
-# Build args let you tweak build config at image build time
-# ARG CONFIG=production
-# ARG BASE_HREF=/
-# Force a stable output folder so we don't have to guess Angular's dist path
-RUN npm run build --configuration=production --base-href=/ --output-path=build
+# Choose build config and (optionally) base href at build time
+ARG CONFIG=production
+ARG BASE_HREF=/
+# Use your package.json "build" script if present; otherwise call ng directly
+RUN npm run -s build -- --configuration=$CONFIG --base-href=$BASE_HREF \
+ || npx ng build --configuration=$CONFIG --base-href=$BASE_HREF
 
-# ---- Runtime stage (NGINX) --------------------------------------------------
-FROM nginx:1.27-alpine AS runtime
-# Replace default site with an SPA-friendly config (below)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# ---------- 2) Runtime stage ----------
+FROM nginx:1.27-alpine
 
-# Static site goes here
-COPY --from=build /app/build/ /usr/share/nginx/html/
+# Minimal tools for healthcheck
+RUN apk add --no-cache curl
 
-#EXPOSE 80
-## Simple healthcheck (ok if index.html is readable)
+# SPA-friendly nginx config (no separate file needed)
+RUN rm -f /etc/nginx/conf.d/default.conf && \
+    printf 'server {\n\
+  listen 80;\n\
+  server_name _;\n\
+  root /usr/share/nginx/html;\n\
+  index index.html;\n\
+  # SPA fallback: send unmatched routes to index.html\n\
+  location / {\n\
+    try_files $uri $uri/ /index.html;\n\
+  }\n\
+  # Cache static assets aggressively (but not index.html)\n\
+  location ~* \\.(?:js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {\n\
+    expires 7d;\n\
+    add_header Cache-Control \"public, max-age=604800, immutable\";\n\
+  }\n\
+}\n' > /etc/nginx/conf.d/angular.conf
+
+# Copy built files from the builder.
+# Angular 15–18+ may output either: dist/<app>/ or dist/<app>/browser
+COPY --from=builder /app/dist /tmp/dist
+
+# Flatten dist structure so /usr/share/nginx/html has index.html at its root
+RUN set -eux; \
+    if distdir="$(find /tmp/dist -type d -name browser -print -quit)"; then \
+      cp -r "$distdir"/* /usr/share/nginx/html/; \
+    elif appdir="$(find /tmp/dist -maxdepth 1 -mindepth 1 -type d -print -quit)"; then \
+      cp -r "$appdir"/* /usr/share/nginx/html/; \
+    else \
+      cp -r /tmp/dist/* /usr/share/nginx/html/; \
+    fi; \
+    rm -rf /tmp/dist
+
+# EXPOSE 80
 # HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-#   CMD wget -qO- http://127.0.0.1/ > /dev/null 2>&1 || exit 1
-
-# NGINX is the default entrypoint/cmd in this image
+#   CMD curl -fsS http://localhost/ >/dev/null || exit 1
