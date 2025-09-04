@@ -9,10 +9,13 @@ PulseBridge.Worker = 8083
 
 
 ## dockerfile
-When **dockerfile** already in place and configured, first step is to build the api image (execute command in same directory of **dockerfile**)
+When **dockerfile** already in place and configured, first step is to build the api image (execute command in solution root directory)
 
 ## build image
-```docker build -t myapi:1.0 .```  
+```docker build -t pulse-bridge-web:1.0 -f PulseBridge.Web/Dockerfile .```  
+```docker build -t pulse-bridge-api:1.0 -f PulseBridge.Api/Dockerfile .```  
+```docker build -t pulse-bridge-scheduler:1.0 -f PulseBridge.Scheduler/Dockerfile .```  
+```docker build -t pulse-bridge-worker:1.0 -f PulseBridge.Worker/Dockerfile .```  
 
 ## run container mapping host port 8080 -> container 8080
 ```docker run -d --name myapi -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Production myapi:1.0```
@@ -29,9 +32,11 @@ REDIS_CONN=redis:6379
 
 
 ## docker compose
-When **docker-compose.yml** already in place and configured, you can run multiple containers (execute command in same directory of **docker-compose.yml**)  
-
+When **docker-compose.yml** already in place and configured, you can run multiple containers (execute command in solution root directory)  
+run all services define in docker-compose.yml file  
 ```docker compose up -d```  
+build and run all services define in docker-compose.yml file  
+```docker compose up -d --build web api sheduler worker```
 
 
 ## operational tips for on-prem
