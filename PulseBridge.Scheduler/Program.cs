@@ -18,7 +18,7 @@ builder.Services.AddQuartz(q =>
         s.UseClustering();
         s.UseNewtonsoftJsonSerializer();
     });
-
+    
     var opts = builder.Configuration.GetSection(AppOptions.SectionName).Get<AppOptions>()!;
     var key = new JobKey("dequeue-and-publish", opts.WorkerGroup);
 

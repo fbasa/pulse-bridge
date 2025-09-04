@@ -42,12 +42,6 @@ services:
       retries: 5
 
   web:
-    build:
-      context: .         # <-- path to your Angular app folder
-      dockerfile: PulseBridge.Web/Dockerfile
-      args:
-        CONFIG: production           # optional: angular build config
-        BASE_HREF: /                 # optional: base href
     image: pulse-bridge-web:1.0
     container_name: pulse-bridge-web
     ports:
@@ -57,9 +51,6 @@ services:
     restart: unless-stopped
 
   api:
-    build:
-      context: .         # <-- path to your Api app folder
-      dockerfile: PulseBridge.Api/Dockerfile
     image: pulse-bridge-api:1.0
     container_name: pulse-bridge-api
     ports:
@@ -82,9 +73,8 @@ services:
     restart: unless-stopped
 
   worker:
-    build:
-      context: .         
-      dockerfile: PulseBridge.Worker/Dockerfile
+    image: pulse-bridge-worker:1.0
+    container_name: pulse-bridge-worker
     environment: *app-env
     depends_on:
       - rabbitmq
@@ -97,9 +87,8 @@ services:
       retries: 10
 
   scheduler:
-    build:
-      context: .         
-      dockerfile: PulseBridge.Scheduler/Dockerfile
+    image: pulse-bridge-scheduler:1.0
+    container_name: pulse-bridge-scheduler
     environment:
       <<: *app-env
       Quartz__JobStore: AdoNet

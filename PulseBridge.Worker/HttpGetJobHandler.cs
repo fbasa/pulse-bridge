@@ -8,7 +8,7 @@ public sealed class HttpGetJobHandler(
     IJobQueueRepository repo,
     IOptions<AppOptions> opts) : IJobHandler
 {
-    public string JobType => "http-get";
+    public string JobType => "SignalR";
     public async Task HandleAsync(long jobId, string payload, CancellationToken ct)
     {
         // here you would switch on msg.JobType and route to proper handler
