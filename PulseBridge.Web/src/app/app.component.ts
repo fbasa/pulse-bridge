@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { JobPayload, SignalRService } from './signalr.service';
+
 
 @Component({
   selector: 'app-root',
@@ -7,5 +9,25 @@ import { Component } from '@angular/core';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'PulseBridge.Web';
+  
+  svc = inject(SignalRService);
+
+  messages = signal<JobPayload[]>([]); // placeholder to keep type help in IDE
+  connState = signal<'disconnected' | 'connecting' | 'connected' | 'reconnecting'>('disconnected');
+
+
+  ngOnInit(): void {
+    this.svc.chat$.subscribe(list => this.messages.set(list));
+    this.svc.connectionState$.subscribe(s => this.connState.set(s));
+    this.connect();
+  }
+
+  ngOnDestroy(): void {
+    this.svc.stop();
+  }
+
+  connect(): void {
+    this.svc.start();
+  }
+
 }

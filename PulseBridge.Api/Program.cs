@@ -33,7 +33,7 @@ app.UseCors(CorsPolicy);
 // Minimal sanity route
 app.MapGet("/", () => Results.Ok("API up"));
 
-app.MapPost("/api/external/send", async ([FromBody] JsonPayload payload, IHubContext<SchedulerHub, ISchedulerClient> hub) => {
+app.MapPost("/api/external/send", async ([FromBody] JobPayload payload, IHubContext<SchedulerHub, ISchedulerClient> hub) => {
     await hub.Clients.All.ReceiveMessage("signalr-user", payload.Message);
     return Results.Ok("sent");
 });
