@@ -4,6 +4,7 @@ using PulseBridge.Scheduler;
 using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
+var conn_string = builder.Configuration.GetConnectionString("QuartzNet")!;
 
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection(AppOptions.SectionName));
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
@@ -13,7 +14,7 @@ builder.Services.AddQuartz(q =>
 {
     q.UsePersistentStore(s =>
     {
-        s.UseSqlServer(x => x.ConnectionString = builder.Configuration.GetConnectionString("QuartzNet")!);
+        s.UseSqlServer(x => x.ConnectionString = conn_string);
         s.UseProperties = true;
         s.UseClustering();
         s.UseNewtonsoftJsonSerializer();

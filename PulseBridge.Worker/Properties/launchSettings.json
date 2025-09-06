@@ -1,10 +1,4 @@
 {
-  "iisSettings": {
-    "iisExpress": {
-      "applicationUrl": "http://localhost:5100",
-      "sslPort": 0
-    }
-  },
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
@@ -12,12 +6,30 @@
     },
     "YourApi": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5101", // <-- no https here
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:5101" // <-- http only
-      }
+        "ASPNETCORE_URLS": "http://localhost:5101"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5101"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "environmentVariables": {
+        "ASPNETCORE_HTTP_PORTS": "8080"
+      },
+      "publishAllPorts": true,
+      "useSSL": false
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5100",
+      "sslPort": 0
     }
   }
 }

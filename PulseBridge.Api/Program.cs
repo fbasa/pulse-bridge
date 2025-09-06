@@ -1,23 +1,46 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using PulseBridge.Api;
+using PulseBridge.Api.SignalR;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// SignalR
+builder.Services.AddSignalR();
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// CORS (adjust origins to match your frontend dev URLs)
+const string CorsPolicy = "Client";
+builder.Services.AddCors(o =>
+{
+    o.AddPolicy(CorsPolicy, p => p
+        .WithOrigins(
+            "http://localhost:4200",   // Angular
+            "https://localhost:4200",
+            "http://localhost:5173",   // Vite
+            "http://127.0.0.1:5500"    // simple HTML live server
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());   //signalr requires this
+});
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseCors(CorsPolicy);
 
-app.UseHttpsRedirection();
 
-app.UseAuthorization();
+// Minimal sanity route
+app.MapGet("/", () => Results.Ok("API up"));
 
-app.MapControllers();
+app.MapPost("/api/external/send", async ([FromBody] JsonPayload payload, IHubContext<SchedulerHub, ISchedulerClient> hub) => {
+    await hub.Clients.All.ReceiveMessage("signalr-user", payload.Message);
+    return Results.Ok("sent");
+});
+
+// Map the hub
+app.MapHub<SchedulerHub>("/hubs/schedulerHub");
+
+
 
 app.Run();
