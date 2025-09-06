@@ -10,8 +10,6 @@ builder.Services.AddSingleton<IJobQueueRepository, JobQueueRepository>();
 builder.Services.AddHttpClient("external-api")
     .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(10));
 
-//builder.Services.AddSingleton<IEmailSender>();
-//builder.Services.AddSingleton<IJobHandler, SendEmailJobHandler>();
 builder.Services.AddSingleton<IJobHandler, HttpGetJobHandler>();
 builder.Services.AddSingleton<IJobHandlerRegistry, JobHandlerRegistry>();
 
