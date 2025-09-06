@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using PulseBridge.Api;
 using PulseBridge.Api.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,10 +13,7 @@ builder.Services.AddCors(o =>
 {
     o.AddPolicy(CorsPolicy, p => p
         .WithOrigins(
-            "http://localhost:4200",   // Angular
-            "https://localhost:4200",
-            "http://localhost:5173",   // Vite
-            "http://127.0.0.1:5500"    // simple HTML live server
+            "http://localhost:4200"   // Angular
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
