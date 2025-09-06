@@ -17,8 +17,8 @@ export class AppComponent {
 
 
   ngOnInit(): void {
-    this.svc.chat$.subscribe(list => this.messages.set(list));
-    this.svc.connectionState$.subscribe(s => this.connState.set(s));
+    this.svc.chat$.subscribe(msg => this.messages.set(msg));
+    this.svc.connectionState$.subscribe(state => this.connState.set(state));
     this.connect();
   }
 

@@ -1,3 +1,8 @@
+
+<p>
+  Connection status: <b>{{ connState() }}</b>
+</p>
+
 <div *ngFor="let m of messages()">
   <b>{{ m.user }}</b>: {{ m.message }}
 </div>
