@@ -9,6 +9,10 @@
       {
         "Path": "PulseBridge.Worker\\PulseBridge.Worker.csproj",
         "Action": "Start"
+      },
+      {
+        "Path": "PulseBridge.Api\\PulseBridge.Api.csproj",
+        "Action": "Start"
       }
     ]
   }

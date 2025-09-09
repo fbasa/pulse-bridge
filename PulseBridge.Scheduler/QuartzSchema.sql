@@ -4,7 +4,7 @@
 -- and then recreating them from scratch.
 -- Should you only require it to create the tables, set @DropDb to 0.
 
-USE [QuartzNet];
+USE [QuartzNet9];
 GO
 
 DECLARE @DropDb BIT = 1; -- Set this to 0 to skip DROP statements, 1 to include them
@@ -388,4 +388,28 @@ CREATE INDEX [IDX_QRTZ_T_NFT_ST_MISFIRE_GRP]  ON [dbo].[QRTZ_TRIGGERS](SCHED_NAM
 CREATE INDEX [IDX_QRTZ_FT_INST_JOB_REQ_RCVRY] ON [dbo].[QRTZ_FIRED_TRIGGERS](SCHED_NAME, INSTANCE_NAME, REQUESTS_RECOVERY);
 CREATE INDEX [IDX_QRTZ_FT_G_J]                ON [dbo].[QRTZ_FIRED_TRIGGERS](SCHED_NAME, JOB_GROUP, JOB_NAME);
 CREATE INDEX [IDX_QRTZ_FT_G_T]                ON [dbo].[QRTZ_FIRED_TRIGGERS](SCHED_NAME, TRIGGER_GROUP, TRIGGER_NAME);
+GO
+
+--TEST DATA INSERTION
+INSERT INTO [dbo].[QRTZ_JobQueue]
+           ([JobType]
+           ,[Payload]
+           ,[Status]
+           ,[Attempts]
+           ,[AvailableAt]
+           ,[LockedAt]
+           ,[LockedBy]
+           ,[DispatchedAt]
+           ,[LastError])
+     VALUES
+           ('SignalR'
+           ,'Test payload'
+           ,0
+           ,0
+           ,GETUTCDATE()
+           ,null
+           ,null
+           ,null
+           ,null
+           )
 GO

@@ -10,6 +10,8 @@ builder.Services.Configure<AppOptions>(builder.Configuration.GetSection(AppOptio
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddSingleton<IJobQueueRepository, JobQueueRepository>();
 
+await DatabaseBootstrap.EnsureDatabaseExistsAsync(conn_string);
+
 builder.Services.AddQuartz(q =>
 {
     q.UsePersistentStore(s =>
@@ -44,6 +46,17 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+// Add our initializer
+builder.Services.AddSingleton<IQuartzSchemaBootstrapper, QuartzSchemaBootstrapper>();
+
 var app = builder.Build();
+
+// Ensure Quartz schema before the host starts taking traffic
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var bootstrapper = scope.ServiceProvider.GetRequiredService<IQuartzSchemaBootstrapper>();
+    await bootstrapper.EnsureCreatedAsync(CancellationToken.None);
+}
+
 app.MapGet("/", () => "Scheduler up");
 app.Run();
