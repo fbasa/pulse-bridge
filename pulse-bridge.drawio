@@ -98,8 +98,11 @@
             <mxPoint x="460" y="250" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="u2DKv-vihWPoE-Smp5ZA-22" value="Azure DevOps" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
+        <mxCell id="u2DKv-vihWPoE-Smp5ZA-22" value="DevOps" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
           <mxGeometry x="210" y="60" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="KZBGDTwgURCJjc-BDLO0-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.13;entryY=0.77;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="kWajGwL6_NWsyl4DS-xg-1" target="kWajGwL6_NWsyl4DS-xg-9">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
