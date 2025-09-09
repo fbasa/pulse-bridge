@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using PulseBridge.Api.SignalR;
+using PulseBridge.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 

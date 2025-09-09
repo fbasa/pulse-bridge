@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using PulseBridge.Contracts;
 using PulseBridge.Infrastructure;
 
 namespace PulseBridge.Worker;
@@ -16,7 +17,7 @@ public sealed class HttpGetJobHandler(
 
         try
         {
-            using var resp = await client.PostAsJsonAsync(opts.Value.SendAndReceiveUrl, payload, ct);
+            using var resp = await client.PostAsJsonAsync(opts.Value.SendAndReceiveUrl, new JobPayload(payload), ct);
             resp.EnsureSuccessStatusCode();
 
             // mark done (the worker, not the scheduler, owns completion)
