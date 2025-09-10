@@ -113,7 +113,7 @@ services:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: ${SA_PASSWORD}
       MSSQL_PID: "Developer"
-    networks: [data_net]
+    networks: [edge_net, data_net]
     ports:
       - "1433:1433"   # only expose if you really need external access (for dev only)
     volumes:
