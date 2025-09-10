@@ -4,7 +4,7 @@ Bridges scheduled "pulses" to API to client UIs in real time.
 
 PulseBridge.Web = 8081  
 PulseBridge.Api = 8082  
-Ttraefik Dashboard = 8080  
+Traefik Dashboard = 8080  
 
 
 ## build all images (docker-bake.hcl)
@@ -59,4 +59,18 @@ REDIS_CONN=redis:6379
   * **Multiple boxes/HA**: Move to **Kubernetes** (k3s is a lightweight on-prem favorite).
 
 
+## Unable to login 'sa'
+Option C — Reset by recreating the DB volume (destructive)
 
+This wipes all SQL data; only do in dev.  
+
+Stop and remove containers:  
+```docker compose down```  
+
+Remove the SQL data volume:  
+```docker volume rm pulse-bridge_mssqldata```  
+
+Ensure .env has the desired SA_PASSWORD, then recreate:  
+```docker compose up -d```  
+
+You’ll get a fresh SQL instance with SA set to the .env value.
