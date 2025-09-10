@@ -14,9 +14,9 @@ x-env: &app-env
   RabbitMq__Pass: ${RABBITMQ_PASS}
   # Worker posts to API inside the compose network
   App__SendAndReceiveUrl: http://api:8080/api/external/send
-  MessageBroker__Host: rabbitmq
-  MessageBroker__Username: ${RABBITMQ_USER}
-  MessageBroker__Password: ${RABBITMQ_PASS}
+  # MessageBroker__Host: rabbitmq
+  # MessageBroker__Username: ${RABBITMQ_USER}
+  # MessageBroker__Password: ${RABBITMQ_PASS}
   # SignalR backplane
   SignalR__UseRedisBackplane: "true"
 
