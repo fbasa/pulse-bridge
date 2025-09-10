@@ -2,22 +2,14 @@
 Event‑Driven Architecture (Quartz + MassTransit + RabbitMQ + SignalR + Redis)  
 Bridges scheduled "pulses" to API to client UIs in real time.
 
-PulseBridge.Web = 8080  
-PulseBridge.Api = 8081  
-PulseBridge.Scheduler = 8082  
-PulseBridge.Worker = 8083
+PulseBridge.Web = 8081  
+PulseBridge.Api = 8082  
+Ttraefik Dashboard = 8080  
 
 
-## dockerfile
-When **dockerfile** already in place and configured, first step is to build images (execute command in solution root directory)  
-
-## build all images (docker-bake.hcl) except web
+## build all images (docker-bake.hcl)
 ```docker buildx bake```  
-This will create images for api, scheduler & worker  
-
-## build image for web  
-From solution root directory ```cd PulseBridge.Web``` then execute docker build  
-```docker build -t pulse-bridge-web:1.0 .```  
+This will create all images (web, api, scheduler & worker)  
 
 
 ## docker compose is to run images built
@@ -27,12 +19,13 @@ run all services define in docker-compose.yml file
 
 
 ## build individual image
+```docker build -t pulse-bridge-web:1.0 -f PulseBridge.Web/Dockerfile .```  
 ```docker build -t pulse-bridge-api:1.0 -f PulseBridge.Api/Dockerfile .```  
 ```docker build -t pulse-bridge-scheduler:1.0 -f PulseBridge.Scheduler/Dockerfile .```  
 ```docker build -t pulse-bridge-worker:1.0 -f PulseBridge.Worker/Dockerfile .```  
 
 ## create database if it doesn't exist
-```docker exec sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Strong_Passw0rd!" -C -Q "IF DB_ID('AppDb') IS NULL CREATE DATABASE AppDb;"```
+```docker exec sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Strong_Passw0rd!" -C -Q "IF DB_ID('QuartzNet') IS NULL CREATE DATABASE QuartzNet;"```
 
 ## run database update inside container
 ```docker run --rm --network myapp_default -v ${PWD}:/src -w /src mcr.microsoft.com/dotnet/sdk:9.0 dotnet ef database update```
@@ -45,7 +38,7 @@ run all services define in docker-compose.yml file
 
 ## .env file 
 SA_PASSWORD=<Strong_Password>  
-DB_CONN=Server=sql;Database=AppDb;User ID=sa;Password=<Strong_Password>;TrustServerCertificate=true;  
+DB_CONN=Server=sql;Database=QuartzNet;User ID=sa;Password=<Strong_Password>;TrustServerCertificate=true;  
 REDIS_CONN=redis:6379  
 
 (keep ```.env``` file out of source control)  
