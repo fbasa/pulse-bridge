@@ -8,6 +8,12 @@ x-env: &app-env
   # App settings (override via .env)
   ConnectionStrings__QuartzNet: ${DB_CONN}
   Redis__ConnectionString: ${REDIS_CONN}
+  # RabbitMQ settings consumed by Worker/Scheduler
+  RabbitMq__Host: rabbitmq
+  RabbitMq__User: ${RABBITMQ_USER}
+  RabbitMq__Pass: ${RABBITMQ_PASS}
+  # Worker posts to API inside the compose network
+  App__SendAndReceiveUrl: http://api:8080/api/external/send
   MessageBroker__Host: rabbitmq
   MessageBroker__Username: ${RABBITMQ_USER}
   MessageBroker__Password: ${RABBITMQ_PASS}
@@ -141,7 +147,7 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-    networks: [data_net]
+    networks: [edge_net, data_net]
     ports:
       - "15672:15672" # mgmt UI (dev only)
     volumes:
