@@ -1,9 +1,9 @@
 group "default" { 
-    targets = ["api","worker","scheduler"] 
+    targets = ["api","worker","scheduler","web"] 
 }
 target "web" { 
-    context = "."
-    dockerfile = "PulseBridge.Web/Dockerfile"
+    context = "PulseBridge.Web"
+    dockerfile = "Dockerfile"
     tags = ["pulse-bridge-web:1.0"] 
 }
 target "api" { 
