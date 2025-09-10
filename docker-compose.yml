@@ -24,6 +24,7 @@ services:
     image: traefik:v3.1
     command:
       - --api.dashboard=true
+      - --api.insecure=true
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
@@ -55,7 +56,7 @@ services:
     image: pulse-bridge-api:1.0
     container_name: pulse-bridge-api
     ports:
-      - "8082:8080"                    # optional: expose for direct access (dev only)
+      - "8082:8080"
     environment: *app-env
     depends_on:
       - sql
@@ -66,6 +67,7 @@ services:
       - traefik.http.routers.api.rule=Host(`api.localtest.me`)
       - traefik.http.routers.api.entrypoints=web
       - traefik.http.services.api.loadbalancer.server.port=8080
+      #- traefik.docker.network=app_net
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
       interval: 10s
