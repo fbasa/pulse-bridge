@@ -30,6 +30,7 @@ services:
       # For local HTTPS, uncomment and provide certs
       # - --entrypoints.websecure.address=:443
     ports:
+      - "80:80"
       - "8080:8080"
       # - "443:443"
     volumes:
@@ -45,7 +46,7 @@ services:
     image: pulse-bridge-web:1.0
     container_name: pulse-bridge-web
     ports:
-      - "8081:8081"                    # browse SPA at http://localhost:8081
+      - "8081:80"                    # browse SPA at http://localhost:8081
     depends_on:
       - api
     restart: unless-stopped
@@ -54,19 +55,19 @@ services:
     image: pulse-bridge-api:1.0
     container_name: pulse-bridge-api
     ports:
-      - "8082:8082"                    # optional: expose for direct access (dev only)
+      - "8082:8080"                    # optional: expose for direct access (dev only)
     environment: *app-env
     depends_on:
       - sql
       - redis
-    networks: [app_net, data_net]
+    networks: [edge_net, app_net, data_net]
     labels:
       - traefik.enable=true
       - traefik.http.routers.api.rule=Host(`api.localtest.me`)
       - traefik.http.routers.api.entrypoints=web
       - traefik.http.services.api.loadbalancer.server.port=8080
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8082/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -81,7 +82,7 @@ services:
       - api
     networks: [app_net, data_net]
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8083/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -92,13 +93,13 @@ services:
     environment:
       <<: *app-env
       Quartz__JobStore: AdoNet
-      ConnectionString__QuartzNet: ${DB_CONN}
+      ConnectionStrings__QuartzNet: ${DB_CONN}
     depends_on:
       - sql
       - rabbitmq
     networks: [app_net, data_net]
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8084/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
       interval: 10s
       timeout: 5s
       retries: 10

@@ -14,7 +14,9 @@ builder.Services.AddCors(o =>
 {
     o.AddPolicy(CorsPolicy, p => p
         .WithOrigins(
-            "http://localhost:4200"   // Angular
+            "http://localhost:4200",  // Angular dev server
+            "http://localhost:8081",  // SPA via nginx container
+            "http://api.localtest.me" // optional: if serving SPA on a hostname later
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
