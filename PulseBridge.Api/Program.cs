@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using PulseBridge.Api.SignalR;
@@ -16,7 +17,7 @@ builder.Services.AddCors(o =>
         .WithOrigins(
             "http://localhost:4200",  // Angular dev server
             "http://localhost:8081",  // SPA via nginx container
-            "http://api.localtest.me" // optional: if serving SPA on a hostname later
+            "http://ui.localtest.me" // optional: if serving SPA on a hostname later
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
@@ -26,18 +27,25 @@ builder.Services.AddCors(o =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+app.UseRouting();
 app.UseCors(CorsPolicy);
 
 
-// Minimal sanity route
+// Minimal sanity routes
 app.MapGet("/", () => Results.Ok("API up"));
+app.MapGet("/health", () => Results.Ok("healthy"));
 
 app.MapPost("/api/external/send", async ([FromBody] JobPayload payload, IHubContext<SchedulerHub, ISchedulerClient> hub) => {
     await hub.Clients.All.ReceiveMessage("signalr-user", payload.Message);
     return Results.Ok("sent");
 });
 
-// Map the hub
+// Map the hub and explicitly require CORS
 app.MapHub<SchedulerHub>("/hubs/schedulerHub");
 
 
