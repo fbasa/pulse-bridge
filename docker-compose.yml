@@ -5,18 +5,19 @@ name: pulse-bridge
 x-env: &app-env
   ASPNETCORE_ENVIRONMENT: Development
   ASPNETCORE_URLS: http://0.0.0.0:8080
+
   # App settings (override via .env)
   ConnectionStrings__QuartzNet: ${DB_CONN}
   Redis__ConnectionString: ${REDIS_CONN}
+
   # RabbitMQ settings consumed by Worker/Scheduler
   RabbitMq__Host: rabbitmq
   RabbitMq__User: ${RABBITMQ_USER}
   RabbitMq__Pass: ${RABBITMQ_PASS}
+
   # Worker posts to API inside the compose network
   App__SendAndReceiveUrl: http://api:8080/api/external/send
-  # MessageBroker__Host: rabbitmq
-  # MessageBroker__Username: ${RABBITMQ_USER}
-  # MessageBroker__Password: ${RABBITMQ_PASS}
+
   # SignalR backplane
   SignalR__UseRedisBackplane: "true"
 
@@ -30,15 +31,14 @@ services:
     image: traefik:v3.1
     command:
       - --api.dashboard=true
-      - --api.insecure=true
       - --providers.docker=true
+      #- --api.insecure=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
       # For local HTTPS, uncomment and provide certs
       # - --entrypoints.websecure.address=:443
     ports:
       - "80:80"
-      - "8080:8080"
       # - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -131,8 +131,8 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     container_name: pulse-bridge-redis
     networks: [data_net]
-    ports:
-      - "6379:6379"   # same note: expose only if needed (for dev only)
+    #ports:
+      #- "6379:6379"   # same note: expose only if needed (for dev only)
     volumes:
       - redisdata:/data
     healthcheck:
