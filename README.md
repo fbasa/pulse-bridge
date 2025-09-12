@@ -2,10 +2,8 @@
 Event‑Driven Architecture (Quartz + MassTransit + RabbitMQ + SignalR + Redis)  
 Bridges scheduled "pulses" to API to client UIs in real time.
 
-PulseBridge.Web = 8081  
-PulseBridge.Api = 8082  
-Traefik Dashboard = 8080  
-
+PulseBridge.Web = http://ui.localtest.me/  
+PulseBridge.Api = http://api.localtest.me/
 
 ## build all images (docker-bake.hcl)
 ```docker buildx bake```  

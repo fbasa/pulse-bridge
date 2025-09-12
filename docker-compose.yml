@@ -15,12 +15,6 @@ x-env: &app-env
   RabbitMq__User: ${RABBITMQ_USER}
   RabbitMq__Pass: ${RABBITMQ_PASS}
 
-  # Worker posts to API inside the compose network
-  App__SendAndReceiveUrl: http://api:8080/api/external/send
-
-  # SignalR backplane
-  SignalR__UseRedisBackplane: "true"
-
 networks:
   edge_net: { driver: bridge }
   app_net: { driver: bridge, internal: true }
@@ -52,33 +46,41 @@ services:
   web:
     image: pulse-bridge-web:1.0
     container_name: pulse-bridge-web
-    ports:
-      - "8081:80"                    # browse SPA at http://localhost:8081
-    depends_on:
-      - api
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.web.rule=Host(`ui.localtest.me`)
+      - traefik.http.routers.web.entrypoints=web
+      - traefik.http.services.web.loadbalancer.server.port=80
+    networks: [app_net]
+    depends_on: [traefik]
     restart: unless-stopped
 
   api:
     image: pulse-bridge-api:1.0
     container_name: pulse-bridge-api
-    ports:
-      - "8082:8080"
-    environment: *app-env
-    depends_on:
-      - sql
-      - redis
-    networks: [edge_net, app_net, data_net]
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
     labels:
       - traefik.enable=true
       - traefik.http.routers.api.rule=Host(`api.localtest.me`)
       - traefik.http.routers.api.entrypoints=web
       - traefik.http.services.api.loadbalancer.server.port=8080
-      #- traefik.docker.network=app_net
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      
+
+      # --- CORS middleware (for UI -> API) ---
+      - traefik.http.routers.api.middlewares=api-cors@docker
+      - traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=http://ui.localtest.me
+      # Methods needed by SignalR (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
+      - traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS
+      # Headers SignalR typically sends (include Authorization if you use JWT)
+      - traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With,X-SignalR-User-Agent
+      # If you prefer, you can allow all headers instead of listing:
+      # - traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=*
+      - traefik.http.middlewares.api-cors.headers.accesscontrolallowcredentials=true
+      # Optional niceties:
+      - traefik.http.middlewares.api-cors.headers.addvaryheader=true
+      - traefik.http.middlewares.api-cors.headers.accesscontrolmaxage=86400
+    networks: [app_net]
     restart: unless-stopped
 
   worker:
@@ -147,9 +149,9 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-    networks: [edge_net, data_net]
-    ports:
-      - "15672:15672" # mgmt UI (dev only)
+    networks: [data_net]
+    #ports:
+      #- "15672:15672" # mgmt UI (dev only)
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:

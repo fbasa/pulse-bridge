@@ -1,5 +1,3 @@
-USE [QuartzNet]
-GO
 
 INSERT INTO [dbo].[QRTZ_JobQueue]
            ([JobType]
@@ -22,6 +20,6 @@ INSERT INTO [dbo].[QRTZ_JobQueue]
            ,null
            ,null
            )
-GO
+
 
 
