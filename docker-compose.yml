@@ -1,167 +1,167 @@
-﻿version: "3.9"
+﻿version: "3.9"  
 
 name: pulse-bridge
 
-x-env: &app-env
-  ASPNETCORE_ENVIRONMENT: Development
-  ASPNETCORE_URLS: http://0.0.0.0:8080
+x-env: &app-env  
+  ASPNETCORE_ENVIRONMENT: Development  
+  ASPNETCORE_URLS: http://0.0.0.0:8080 
 
   # App settings (override via .env)
-  ConnectionStrings__QuartzNet: ${DB_CONN}
-  Redis__ConnectionString: ${REDIS_CONN}
+  ConnectionStrings__QuartzNet: ${DB_CONN}  
+  Redis__ConnectionString: ${REDIS_CONN} 
 
   # RabbitMQ settings consumed by Worker/Scheduler
-  RabbitMq__Host: rabbitmq
+  RabbitMq__Host: rabbitmq 
   RabbitMq__User: ${RABBITMQ_USER}
   RabbitMq__Pass: ${RABBITMQ_PASS}
 
 networks:
-  edge_net: { driver: bridge }
-  app_net: { driver: bridge, internal: true }
-  data_net: { driver: bridge, internal: true }
+  edge_net: { driver: bridge }  # Public edge for ingress/host access
+  app_net: { driver: bridge, internal: true }  # Internal app-only network sql/redis/rabbitmq
+  data_net: { driver: bridge, internal: true }  
 
 services:
   traefik:
-    image: traefik:v3.1
+    image: traefik:v3.1  # Reverse proxy and router
     command:
-      - --api.dashboard=true
-      - --providers.docker=true
-      #- --api.insecure=true
-      - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.address=:80
+      - --api.dashboard=true  # Enable built-in dashboard (internal)
+      - --providers.docker=true  # Watch Docker for dynamic config
+      #- --api.insecure=true  # Exposes dashboard without auth (avoid in prod)
+      - --providers.docker.exposedbydefault=false  # Require explicit opt-in via labels
+      - --entrypoints.web.address=:80  # HTTP entrypoint on port 80
       # For local HTTPS, uncomment and provide certs
-      # - --entrypoints.websecure.address=:443
+      # - --entrypoints.websecure.address=:443  # HTTPS entrypoint
     ports:
-      - "80:80"
-      # - "443:443"
+      - "80:80"  # Expose HTTP from host to Traefik
+      # - "443:443"  # Expose HTTPS if configured
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks: [edge_net, app_net]
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # Read-only access to Docker events
+    networks: [edge_net, app_net]  # Reach host and internal services
     healthcheck:
-      test: ["CMD", "traefik", "healthcheck"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "traefik", "healthcheck"]  # Liveness probe
+      interval: 10s  # How often to check
+      timeout: 5s  # Max time per check
+      retries: 5  # Fail after N attempts
 
   web:
-    image: pulse-bridge-web:1.0
-    container_name: pulse-bridge-web
+    image: pulse-bridge-web:1.0  
+    container_name: pulse-bridge-web  
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.web.rule=Host(`ui.localtest.me`)
-      - traefik.http.routers.web.entrypoints=web
-      - traefik.http.services.web.loadbalancer.server.port=80
-    networks: [app_net]
-    depends_on: [traefik]
-    restart: unless-stopped
+      - traefik.enable=true  # Opt-in to Traefik routing
+      - traefik.http.routers.web.rule=Host(`ui.localtest.me`)  # Route by host
+      - traefik.http.routers.web.entrypoints=web  # Listen on HTTP
+      - traefik.http.services.web.loadbalancer.server.port=80  # Container port
+    networks: [app_net]  # Only needs internal app net
+    depends_on: [traefik]  # Ensure proxy ready before start
+    restart: unless-stopped  # Auto-restart for resilience
 
   api:
-    image: pulse-bridge-api:1.0
-    container_name: pulse-bridge-api
+    image: pulse-bridge-api:1.0  
+    container_name: pulse-bridge-api  
     environment:
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_URLS=http://+:8080  # Bind API to port 8080
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.api.rule=Host(`api.localtest.me`)
-      - traefik.http.routers.api.entrypoints=web
-      - traefik.http.services.api.loadbalancer.server.port=8080
+      - traefik.enable=true  # Opt-in to Traefik routing
+      - traefik.http.routers.api.rule=Host(`api.localtest.me`)  # Route by host
+      - traefik.http.routers.api.entrypoints=web  # Listen on HTTP
+      - traefik.http.services.api.loadbalancer.server.port=8080  # Container port
       
-
       # --- CORS middleware (for UI -> API) ---
-      - traefik.http.routers.api.middlewares=api-cors@docker
-      - traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=http://ui.localtest.me
+      - traefik.http.routers.api.middlewares=api-cors@docker  # Attach CORS middleware
+      - traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=http://ui.localtest.me  # Allowed origin
       # Methods needed by SignalR (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
-      - traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS
+      - traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS  # Allow needed methods
       # Headers SignalR typically sends (include Authorization if you use JWT)
-      - traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With,X-SignalR-User-Agent
+      - traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With,X-SignalR-User-Agent  # Allow headers SignalR/JWT use
       # If you prefer, you can allow all headers instead of listing:
       # - traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=*
-      - traefik.http.middlewares.api-cors.headers.accesscontrolallowcredentials=true
+      - traefik.http.middlewares.api-cors.headers.accesscontrolallowcredentials=true  # Allow cookies/credentials
       # Optional niceties:
-      - traefik.http.middlewares.api-cors.headers.addvaryheader=true
-      - traefik.http.middlewares.api-cors.headers.accesscontrolmaxage=86400
-    networks: [app_net]
-    restart: unless-stopped
+      - traefik.http.middlewares.api-cors.headers.addvaryheader=true  # Proper caching of CORS responses
+      - traefik.http.middlewares.api-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
+    networks: [app_net]  # Internal only; fronted by Traefik
+    restart: unless-stopped  # Auto-restart for resilience
 
   worker:
-    image: pulse-bridge-worker:1.0
-    container_name: pulse-bridge-worker
-    environment: *app-env
+    image: pulse-bridge-worker:1.0 
+    container_name: pulse-bridge-worker  
+    environment: *app-env  # Reuse common .NET env
     depends_on:
-      - rabbitmq
-      - api
-    networks: [app_net, data_net]
+      - rabbitmq  # Needs broker to connect
+      - api  # Talks to API/SignalR
+    networks: [app_net, data_net]  # Access app and data tiers
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]  # Probe HTTP endpoint
       interval: 10s
       timeout: 5s
       retries: 10
 
   scheduler:
-    image: pulse-bridge-scheduler:1.0
-    container_name: pulse-bridge-scheduler
+    image: pulse-bridge-scheduler:1.0  
+    container_name: pulse-bridge-scheduler 
     environment:
-      <<: *app-env
-      Quartz__JobStore: AdoNet
-      ConnectionStrings__QuartzNet: ${DB_CONN}
+      <<: *app-env  # Merge common env
+      Quartz__JobStore: AdoNet  # Persist jobs in DB
+      ConnectionStrings__QuartzNet: ${DB_CONN}  # DB for Quartz.NET
     depends_on:
-      - sql
-      - rabbitmq
-    networks: [app_net, data_net]
+      - sql  # Requires DB first
+      - rabbitmq  # Publishes/consumes via broker
+    networks: [app_net, data_net]  # Needs app/data access
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]  # Probe HTTP endpoint
       interval: 10s
       timeout: 5s
       retries: 10
 
   sql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: pulse-bridge-sql
+    image: mcr.microsoft.com/mssql/server:2022-latest  # SQL Server 2022 image
+    container_name: pulse-bridge-sql  # Stable name
     environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${SA_PASSWORD}
-      MSSQL_PID: "Developer"
-    networks: [edge_net, data_net]
+      ACCEPT_EULA: "Y"  # Required to run MSSQL
+      SA_PASSWORD: ${SA_PASSWORD}  # SA password from .env
+      MSSQL_PID: "Developer"  # Free dev edition
+    networks: [edge_net, data_net]  # Reachable from host and data tier
     ports:
-      - "1433:1433"   # only expose if you really need external access (for dev only)
+      - "1433:1433"   # Map DB port to host (dev only)
     volumes:
-      - mssqldata:/var/opt/mssql
-    restart: unless-stopped
+      - mssqldata:/var/opt/mssql  
+    restart: unless-stopped  
 
   redis:
-    image: redis:7.2
-    command: ["redis-server", "--appendonly", "yes"]
-    container_name: pulse-bridge-redis
-    networks: [data_net]
+    image: redis:7.2  
+    command: ["redis-server", "--appendonly", "yes"]  # Enable AOF persistence
+    container_name: pulse-bridge-redis  
+    networks: [data_net]  # Internal data tier only
     #ports:
-      #- "6379:6379"   # same note: expose only if needed (for dev only)
+      #- "6379:6379"   # Expose only if needed for external access
     volumes:
-      - redisdata:/data
+      - redisdata:/data  
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "ping"]  # Liveness probe
       interval: 10s
       timeout: 5s
       retries: 10
-    restart: unless-stopped
+    restart: unless-stopped 
 
   rabbitmq:
-    image: rabbitmq:3.13-management
+    image: rabbitmq:3.13-management  # Broker with management UI
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-    networks: [data_net]
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER} 
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}  
+    networks: [data_net]  # Internal data tier only
     #ports:
-      #- "15672:15672" # mgmt UI (dev only)
+      #- "15672:15672" # Mgmt UI; expose only in dev
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq  
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]  # Liveness probe
       interval: 10s
       timeout: 5s
       retries: 10
-    restart: unless-stopped
+    restart: unless-stopped  
 
+# Persist state so host reboots don't lose data
 volumes:
-  mssqldata:
-  redisdata:
-  rabbitmq_data:
+  mssqldata:  
+  redisdata:  
+  rabbitmq_data:  
