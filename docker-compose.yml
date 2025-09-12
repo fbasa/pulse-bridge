@@ -120,7 +120,9 @@ services:
       ACCEPT_EULA: "Y"  # Required to run MSSQL
       SA_PASSWORD: ${SA_PASSWORD}  # SA password from .env
       MSSQL_PID: "Developer"  # Free dev edition
-    networks: [edge_net, data_net]  # Reachable from host and data tier
+    networks: 
+      - edge_net  # dev only: reachable from host
+      - data_net  # Reachable from host and data tier
     ports:
       - "1433:1433"   # Map DB port to host (dev only)
     volumes:
