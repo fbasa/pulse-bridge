@@ -9,7 +9,7 @@ OpenTelemetry = https://otel.localtest.me/search
 https://api.localtest.me/api/jobs  
 https://api.localtest.me/api/jobs/insert  
 
-https://github.com/fbasa/pulse-bridge/blob/main/diagram.png
+![diagram](diagram.png)
 
 ## build all images (docker-bake.hcl)
 ```docker buildx bake```  
