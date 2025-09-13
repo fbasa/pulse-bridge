@@ -60,8 +60,7 @@ services:
     environment:
       <<: *app-env  # Merge common .NET env
       ASPNETCORE_URLS: http://+:8080  # DB for Quartz.NET
-      #App__SendAndReceiveUrl: http://api:8080/api/external/send  # SignalR endpoint for Worker
-      #App__IntervalInSeconds: 5  # Worker polling interval
+
     labels:
       - traefik.enable=true  # Opt-in to Traefik routing
       - traefik.http.routers.api.rule=Host(`api.localtest.me`)  # Route by host
@@ -87,7 +86,10 @@ services:
   worker:
     image: pulse-bridge-worker:1.0 
     container_name: pulse-bridge-worker  
-    environment: *app-env  # Reuse common .NET env
+    environment: 
+      <<: *app-env  # Reuse common .NET env
+      App__SendAndReceiveUrl: http://api:8080/api/external/send  # SignalR endpoint
+      App__IntervalInSeconds: 5  # Worker polling interval
     depends_on:
       - rabbitmq  # Needs broker to connect
       - api  # Talks to API/SignalR
@@ -123,8 +125,11 @@ services:
       ACCEPT_EULA: "Y"  # Required to run MSSQL
       SA_PASSWORD: ${SA_PASSWORD}  # SA password from .env
       MSSQL_PID: "Developer"  # Free dev edition
-    networks: [data_net]  # Internal data tier only
-    # No published ports: internal-only (not reachable from host)
+    networks: 
+      - data_net  # Internal data tier only
+      #- edge_net  # Allow host access for management (dev only)
+    #ports:
+      #- "1433:1433"     # Allow host access for management (dev only)
     volumes:
       - mssqldata:/var/opt/mssql  
     restart: unless-stopped  
