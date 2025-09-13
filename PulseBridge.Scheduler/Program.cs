@@ -1,4 +1,6 @@
 using MassTransit;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using PulseBridge.Infrastructure;
 using PulseBridge.Scheduler;
 using Quartz;
@@ -11,6 +13,15 @@ if (string.IsNullOrWhiteSpace(conn_string))
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection(AppOptions.SectionName));
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddSingleton<IJobQueueRepository, JobQueueRepository>();
+
+// OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService("scheduler"))
+    .WithTracing(t => 
+        t.AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter());
+
 
 await DatabaseBootstrap.EnsureDatabaseExistsAsync(conn_string);
 

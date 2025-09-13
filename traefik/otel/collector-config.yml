@@ -1,0 +1,22 @@
+receivers:
+  otlp: { protocols: { grpc: { endpoint: 0.0.0.0:4317 }, http: { endpoint: 0.0.0.0:4318 } } }
+  #prometheus: { config: { scrape_configs: [] } }
+
+processors:
+  batch: {}
+  memory_limiter: { check_interval: 5s, limit_mib: 256 }
+
+exporters:
+  logging: { loglevel: info }
+  otlp/jaeger: { endpoint: jaeger:4317 }  # gRPC
+
+extensions:
+  health_check: {}
+  pprof: {}
+
+service:
+  extensions: [health_check, pprof]
+  pipelines:
+    traces:   { receivers: [otlp], processors: [memory_limiter, batch], exporters: [logging] }
+    metrics:  { receivers: [otlp], processors: [batch], exporters: [logging] }
+    logs:     { receivers: [otlp], processors: [batch], exporters: [logging] }

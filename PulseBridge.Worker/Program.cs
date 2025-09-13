@@ -1,4 +1,6 @@
 using MassTransit;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using PulseBridge.Infrastructure;
 using PulseBridge.Worker;
 
@@ -10,6 +12,14 @@ builder.Services.Configure<AppOptions>(builder.Configuration.GetSection(AppOptio
 
 builder.Services.AddHttpClient("external-api")
     .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(10));
+
+// OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService("worker"))
+    .WithTracing(t =>
+        t.AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter());
 
 builder.Services.AddSingleton<IJobHandler, HttpGetJobHandler>();
 builder.Services.AddSingleton<IJobHandlerRegistry, JobHandlerRegistry>();

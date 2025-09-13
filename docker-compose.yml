@@ -59,15 +59,14 @@ services:
     container_name: pulse-bridge-web  
     labels:
       - traefik.enable=true  # Opt-in to Traefik routing
-      #- traefik.http.routers.web.rule=Host(`ui.localtest.me`)  # Route by host
       - traefik.http.routers.websecure.rule=Host(`ui.localtest.me`)  # Route by host
-      #- traefik.http.routers.web.entrypoints=web  # Listen on HTTP
       - traefik.http.routers.websecure.entrypoints=websecure
       - traefik.http.routers.websecure.tls=true  # Enable TLS
       - traefik.http.routers.websecure.middlewares=gzip@file,secure-headers@file
       - traefik.http.services.web.loadbalancer.server.port=80  # Container port
     networks: [app_net]  # Only needs internal app net
     depends_on: [traefik]  # Ensure proxy ready before start
+    security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  # Auto-restart for resilience
 
   api:
@@ -75,12 +74,10 @@ services:
     container_name: pulse-bridge-api  
     environment:
       <<: *app-env  # Merge common .NET env
-      ASPNETCORE_URLS: http://+:8080  # DB for Quartz.NET
-
+      ASPNETCORE_URLS: http://+:8080  
     labels:
       - traefik.enable=true  # Opt-in to Traefik routing
       - traefik.http.routers.api.rule=Host(`api.localtest.me`)  # Route by host
-      #- traefik.http.routers.api.entrypoints=web  # Listen on HTTP
       - traefik.http.routers.api.entrypoints=websecure
       - traefik.http.routers.api.tls=true  # Enable TLS
       - traefik.http.routers.api.middlewares=gzip@file,secure-headers
@@ -100,6 +97,11 @@ services:
       - traefik.http.middlewares.api-cors.headers.addvaryheader=true  # Proper caching of CORS responses
       - traefik.http.middlewares.api-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
     networks: [app_net, data_net]  # Internal only; fronted by Traefik
+    depends_on:
+      - sql  # Needs DB
+      - redis  # Uses Redis for caching
+      - otel-collector  # Optional: waits for OTEL
+    security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  # Auto-restart for resilience
 
   worker:
@@ -112,12 +114,15 @@ services:
       - rabbitmq  # Needs broker to connect
       - api  # Talks to API/SignalR
       - redis  # Uses Redis for caching
+      - otel-collector  # Optional: waits for OTEL
     networks: [app_net, data_net]  # Access app and data tiers
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]  # Probe HTTP endpoint
       interval: 10s
       timeout: 5s
       retries: 10
+    security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
+    restart: unless-stopped  # Auto-restart for resilience
 
   scheduler:
     image: pulse-bridge-scheduler:1.0  
@@ -130,12 +135,15 @@ services:
     depends_on:
       - sql  # Requires DB first
       - rabbitmq  # Publishes/consumes via broker
+      - otel-collector  # Optional: waits for OTEL
     networks: [app_net, data_net]  # Needs app/data access
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]  # Probe HTTP endpoint
       interval: 10s
       timeout: 5s
       retries: 10
+    security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
+    restart: unless-stopped  # Auto-restart for resilience
 
   sql:
     image: mcr.microsoft.com/mssql/server:2022-latest  # SQL Server 2022 image
@@ -151,6 +159,7 @@ services:
       #- "1433:1433"     # Allow host access for management (dev only)
     volumes:
       - mssqldata:/var/opt/mssql  
+    security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  
 
   redis:
@@ -187,6 +196,26 @@ services:
       retries: 10
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.98.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./traefik/otel/collector-config.yml:/etc/otel-collector-config.yaml:ro
+    networks: [app_net]
+    restart: unless-stopped
+    healthcheck: { test: ["CMD","wget","-qO-","http://localhost:13133/"], interval: 30s, timeout: 5s, retries: 5 }
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    restart: unless-stopped
+    networks: [edge_net, app_net]
+    ports:
+      - "127.0.0.1:16686:16686" # Jaeger UI
+
 
 # Persist state so host reboots don't lose data
 volumes:

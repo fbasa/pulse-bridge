@@ -7,6 +7,9 @@ http:
         frameDeny: true
         referrerPolicy: no-referrer
         browserXssFilter: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
 tls:
   certificates:
     - certFile: /certs/dev.crt

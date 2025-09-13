@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using PulseBridge.Api.Caching;
 using PulseBridge.Api.SignalR;
 using PulseBridge.Contracts;
@@ -62,12 +64,28 @@ builder.Services.AddOutputCache(options =>
         .Tag("jobs"));
 });
 
+// OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService("api"))
+    .WithTracing(t => t
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter());
+        
 var app = builder.Build();
 
 app.UseRouting();
 // output caching
 app.UseOutputCache();
 
+app.Use(async (ctx, next) =>
+{
+    // OWASP-ish headers
+    ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    ctx.Response.Headers["X-Frame-Options"] = "DENY";
+    ctx.Response.Headers["Referrer-Policy"] = "no-referrer";
+    await next();
+});
 
 // Minimal sanity routes
 app.MapGet("/", () => Results.Ok("API up"));
