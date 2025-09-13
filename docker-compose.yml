@@ -8,7 +8,7 @@ x-env: &app-env
 
   # App settings (override via .env)
   ConnectionStrings__QuartzNet: ${DB_CONN}  
-  Redis__ConnectionString: ${REDIS_CONN} 
+  ConnectionStrings__Redis: redis:${REDIS_PORT},password=${REDIS_PW} 
 
   # RabbitMQ settings consumed by Worker/Scheduler
   RabbitMq__Host: rabbitmq 
@@ -89,6 +89,7 @@ services:
     depends_on:
       - rabbitmq  # Needs broker to connect
       - api  # Talks to API/SignalR
+      - redis  # Uses Redis for caching
     networks: [app_net, data_net]  # Access app and data tiers
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]  # Probe HTTP endpoint
@@ -143,6 +144,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped 
 
   rabbitmq:
@@ -160,6 +162,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  
 
 # Persist state so host reboots don't lose data
