@@ -1,0 +1,13 @@
+http:
+  middlewares:
+    gzip: { compress: {} }
+    secure-headers:
+      headers:
+        contentTypeNosniff: true
+        frameDeny: true
+        referrerPolicy: no-referrer
+        browserXssFilter: true
+tls:
+  certificates:
+    - certFile: /certs/dev.crt
+      keyFile: /certs/dev.key

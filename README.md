@@ -2,8 +2,11 @@
 Event‑Driven Architecture (Quartz + MassTransit + RabbitMQ + SignalR + Redis)  
 Bridges scheduled "pulses" to API to client UIs in real time.
 
-PulseBridge.Web = http://ui.localtest.me/  
-PulseBridge.Api = http://api.localtest.me/
+PulseBridge.Web = https://ui.localtest.me/  
+PulseBridge.Api = https://api.localtest.me/
+
+https://api.localtest.me/api/jobs  
+https://api.localtest.me/api/jobs/insert  
 
 ## build all images (docker-bake.hcl)
 ```docker buildx bake```  
@@ -71,4 +74,25 @@ Remove the SQL data volume:
 Ensure .env has the desired SA_PASSWORD, then recreate:  
 ```docker compose up -d```  
 
-You’ll get a fresh SQL instance with SA set to the .env value.
+You’ll get a fresh SQL instance with SA set to the .env value.  
+
+
+
+
+## Trusted local TLS with mkcert - Install & trust the local CA
+```mkcert -install```   
+
+## Make a cert for your dev hosts
+```mkdir -p traefik/certs```  
+```mkcert -key-file traefik/certs/dev.key -cert-file traefik/certs/dev.crt ui.localtest.me api.localtest.me```
+
+
+## If mkcert command not found, install choco first
+```Set-ExecutionPolicy Bypass -Scope Process -Force;```  
+```[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;```  
+```iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))```  
+
+## Then install  mkcert
+```choco install mkcert```  
+```mkcert -install```
+

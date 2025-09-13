@@ -29,11 +29,14 @@ services:
       - --providers.docker.exposedbydefault=false  # Require explicit opt-in via labels
       - --entrypoints.web.address=:80  # HTTP entrypoint on port 80
       # For local HTTPS, uncomment and provide certs
-      # - --entrypoints.websecure.address=:443  # HTTPS entrypoint
+      - --entrypoints.websecure.address=:443  # HTTPS entrypoint
+      - --providers.file.filename=/etc/traefik/dynamic.yml
     ports:
       - "80:80"  # Expose HTTP from host to Traefik
-      # - "443:443"  # Expose HTTPS if configured
+      - "443:443"  # Expose HTTPS if configured
     volumes:
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./traefik/certs:/certs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro  # Read-only access to Docker events
     networks: [edge_net, app_net]  # Reach host and internal services
     healthcheck:
@@ -47,8 +50,12 @@ services:
     container_name: pulse-bridge-web  
     labels:
       - traefik.enable=true  # Opt-in to Traefik routing
-      - traefik.http.routers.web.rule=Host(`ui.localtest.me`)  # Route by host
-      - traefik.http.routers.web.entrypoints=web  # Listen on HTTP
+      #- traefik.http.routers.web.rule=Host(`ui.localtest.me`)  # Route by host
+      - traefik.http.routers.websecure.rule=Host(`ui.localtest.me`)  # Route by host
+      #- traefik.http.routers.web.entrypoints=web  # Listen on HTTP
+      - traefik.http.routers.websecure.entrypoints=websecure
+      - traefik.http.routers.websecure.tls=true  # Enable TLS
+      - traefik.http.routers.websecure.middlewares=gzip@file,secure-headers@file
       - traefik.http.services.web.loadbalancer.server.port=80  # Container port
     networks: [app_net]  # Only needs internal app net
     depends_on: [traefik]  # Ensure proxy ready before start
@@ -64,12 +71,15 @@ services:
     labels:
       - traefik.enable=true  # Opt-in to Traefik routing
       - traefik.http.routers.api.rule=Host(`api.localtest.me`)  # Route by host
-      - traefik.http.routers.api.entrypoints=web  # Listen on HTTP
+      #- traefik.http.routers.api.entrypoints=web  # Listen on HTTP
+      - traefik.http.routers.api.entrypoints=websecure
+      - traefik.http.routers.api.tls=true  # Enable TLS
+      - traefik.http.routers.api.middlewares=gzip@file,secure-headers
       - traefik.http.services.api.loadbalancer.server.port=8080  # Container port
       
       # --- CORS middleware (for UI -> API) ---
       - traefik.http.routers.api.middlewares=api-cors@docker  # Attach CORS middleware
-      - traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=http://ui.localtest.me  # Allowed origin
+      - traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=https://ui.localtest.me  # Allowed origin
       # Methods needed by SignalR (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
       - traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS  # Allow needed methods
       # Headers SignalR typically sends (include Authorization if you use JWT)
