@@ -144,7 +144,7 @@ services:
       retries: 10
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  # Auto-restart for resilience
-
+  
   sql:
     image: mcr.microsoft.com/mssql/server:2022-latest  # SQL Server 2022 image
     container_name: pulse-bridge-sql  # Stable name
@@ -162,6 +162,7 @@ services:
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  
 
+  # Redis for caching and pub/sub
   redis:
     image: redis:7.2  
     command: ["redis-server", "--appendonly", "yes","--requirepass","${REDIS_PW}"]  # Enable AOF persistence
@@ -179,6 +180,7 @@ services:
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped 
 
+  # RabbitMQ broker as message queue
   rabbitmq:
     image: rabbitmq:3.13-management  # Broker with management UI
     environment:
@@ -197,25 +199,32 @@ services:
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  
 
+  # OpenTelemetry Collector (OTel)
   otel-collector:
     image: otel/opentelemetry-collector:0.98.0
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./traefik/otel/collector-config.yml:/etc/otel-collector-config.yaml:ro
     networks: [app_net]
-    restart: unless-stopped
     healthcheck: { test: ["CMD","wget","-qO-","http://localhost:13133/"], interval: 30s, timeout: 5s, retries: 5 }
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
+    restart: unless-stopped
 
-
+  # Jaeger UI for viewing traces (optional)
   jaeger:
     image: jaegertracing/all-in-one:1.57
+    networks: [app_net]        # keep it internal; Traefik also sits on app_net
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.otel.rule: Host(`otel.localtest.me`)
+      traefik.http.routers.otel.entrypoints: websecure
+      traefik.http.routers.otel.tls: "true"
+      traefik.http.services.otel.loadbalancer.server.port: "16686"
+      traefik.http.routers.otel.middlewares: gzip@file,secure-headers@file
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
     restart: unless-stopped
-    networks: [edge_net, app_net]
-    ports:
-      - "127.0.0.1:16686:16686" # Jaeger UI
-
 
 # Persist state so host reboots don't lose data
 volumes:

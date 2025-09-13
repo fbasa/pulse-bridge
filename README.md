@@ -3,7 +3,8 @@ Event‑Driven Architecture (Quartz + MassTransit + RabbitMQ + SignalR + Redis)
 Bridges scheduled "pulses" to API to client UIs in real time.
 
 PulseBridge.Web = https://ui.localtest.me/  
-PulseBridge.Api = https://api.localtest.me/
+PulseBridge.Api = https://api.localtest.me/  
+OpenTelemetry = https://otel.localtest.me/search  
 
 https://api.localtest.me/api/jobs  
 https://api.localtest.me/api/jobs/insert  
@@ -84,7 +85,7 @@ You’ll get a fresh SQL instance with SA set to the .env value.
 
 ## Make a cert for your dev hosts
 ```mkdir -p traefik/certs```  
-```mkcert -key-file traefik/certs/dev.key -cert-file traefik/certs/dev.crt ui.localtest.me api.localtest.me```
+```mkcert -key-file traefik/certs/dev.key -cert-file traefik/certs/dev.crt ui.localtest.me api.localtest.me otel.localtest.me```
 
 
 ## If mkcert command not found, install choco first
