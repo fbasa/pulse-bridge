@@ -9,5 +9,5 @@ public interface IJobQueueRepository
     Task MarkDispatchedAsync(long jobId, CancellationToken ct);
     Task MarkJobCompletedAsync(long jobId, CancellationToken ct);
     Task<IReadOnlyList<SignalRJob>> GetSignalRJobsAsync(CancellationToken ct);
-    Task<int> InjsertSignalRJobAsync(CancellationToken ct);
+    Task<int> InsertSignalRJobAsync(CancellationToken ct);
 }

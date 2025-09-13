@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Net;
+using Microsoft.Extensions.Options;
 using PulseBridge.Contracts;
 using PulseBridge.Infrastructure;
 
 namespace PulseBridge.Worker;
-
 public sealed class HttpGetJobHandler(
     IHttpClientFactory http,
     IJobQueueRepository repo,
@@ -14,24 +14,25 @@ public sealed class HttpGetJobHandler(
     {
         if(string.IsNullOrWhiteSpace(opts.Value.SendAndReceiveUrl))
         {
-            throw new InvalidOperationException("SendAndReceiveUrl is not configured");
+            throw new InvalidOperationException("API url is not configured");
         };
         
         // here you would switch on msg.JobType and route to proper handler
         var client = http.CreateClient("external-api");
 
-        try
-        {
-            using var resp = await client.PostAsJsonAsync(opts.Value.SendAndReceiveUrl, new JobPayload(payload), ct);
-            resp.EnsureSuccessStatusCode();
+        using var resp = await client.PostAsJsonAsync(opts.Value.SendAndReceiveUrl, new JobPayload(payload), ct);
 
-            // mark done (the worker, not the scheduler, owns completion)
-            await repo.MarkJobCompletedAsync(jobId, ct);
-        }
-        catch (Exception ex)
+        if (resp.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity or HttpStatusCode.NotFound or HttpStatusCode.Conflict)
         {
-            // Return to pending with backoff; keep error for diagnostics
-            await repo.RequeueWithBackoffAsync(jobId, ex.Message, 1, ct);
+            // Permanent (do NOT retry): dead-letter immediately
+            var body = await resp.Content.ReadAsStringAsync();
+            throw new UnrecoverableMessageException($"Permanent failure from API {(int)resp.StatusCode}: {body}");
         }
+        
+        resp.EnsureSuccessStatusCode();
+
+        // mark done (the worker, not the scheduler, owns completion)
+        await repo.MarkJobCompletedAsync(jobId, ct);
+
     }
 }

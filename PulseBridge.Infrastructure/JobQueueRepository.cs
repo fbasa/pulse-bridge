@@ -51,10 +51,11 @@ public sealed class JobQueueRepository(IDbConnectionFactory factory) : IJobQueue
         return result.AsList();
     }
 
-    public async Task<int> InjsertSignalRJobAsync(CancellationToken ct)
+    public async Task<int> InsertSignalRJobAsync(CancellationToken ct)
     {
         return await factory.ExecuteWithRetryAsync(
              commandText: SqlTemplates.InsertSignalRJob,
+            parameters: new { Payload = System.Text.Json.JsonSerializer.Serialize(new { Message="Sample Json Payload" }) },
              cancellationToken: ct
          );
     }

@@ -3,6 +3,7 @@ using MassTransit;
 using Microsoft.Extensions.Options;
 using PulseBridge.Contracts;
 using PulseBridge.Infrastructure;
+using System.Text.Json;
 
 namespace PulseBridge.Scheduler;
 
@@ -21,7 +22,7 @@ public sealed class DequeueAndPublishHttpJob(
         // 1) Claim a batch
         var claimed = await repo.ClaimAsync(opts.Value.ClaimBatchSize, workerId, ct);
         if (claimed.Count == 0) return;
-        var jobs = claimed.Where(j => j.JobType == JobType.SignalR);
+        var jobs = claimed.Where(j => j.JobType == JobType.SignalR && IsValidJson(j.Payload));
         if (jobs.Count() == 0) return;
         log.LogInformation("Claimed {Count} jobs for dispatch by {Worker}", jobs.Count(), workerId);
 
@@ -56,5 +57,11 @@ public sealed class DequeueAndPublishHttpJob(
         {
             throttler.Release();
         }
+    }
+
+    static bool IsValidJson(string s)
+    {
+        try { using var _ = JsonDocument.Parse(s); return true; }
+        catch { return false; }
     }
 }

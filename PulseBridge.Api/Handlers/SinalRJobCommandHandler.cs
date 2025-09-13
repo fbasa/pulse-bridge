@@ -10,7 +10,7 @@ public sealed class SinalRJobCommandHandler(IMediator mediator, IJobQueueReposit
 {
     public async Task<int> Handle(SignalRJobCommand request, CancellationToken ct)
     {
-        var newId = await repo.InjsertSignalRJobAsync(ct);
+        var newId = await repo.InsertSignalRJobAsync(ct);
         await mediator.Publish(new JobsChanged(), ct);       // invalidate cached
         return newId;
     }

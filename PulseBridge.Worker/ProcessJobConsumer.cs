@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using System.Text.Json;
+using MassTransit;
 using Polly;
 using Polly.Retry;
 using PulseBridge.Contracts;
@@ -12,15 +13,17 @@ public sealed class ProcessJobConsumer(
     ILogger<ProcessJobConsumer> logger) : IConsumer<ProcessJob>
 {
 
-    private static AsyncRetryPolicy Retry(ILogger logger) =>
-        Policy.Handle<Exception>()
+    private static AsyncRetryPolicy TransientRetry(ILogger logger) =>
+        Policy.Handle<Exception>(ex =>
+                ex is not UnrecoverableMessageException &&
+                ex.GetBaseException() is not UnrecoverableMessageException)
               .WaitAndRetryAsync(
                   retryCount: 3,
                   sleepDurationProvider: i => TimeSpan.FromSeconds(Math.Pow(2, i)),
                   onRetry: (ex, delay, attempt, ctx) =>
                   {
                       logger.LogWarning(ex,
-                          "API POST Attempt {Attempt} failed. Retrying in {Delay}s…",
+                          "API POST attempt {Attempt} failed. Retrying in {Delay}s…",
                           attempt, delay.TotalSeconds);
                   });
 
@@ -29,6 +32,13 @@ public sealed class ProcessJobConsumer(
         var msg = ctx.Message;
         var ct = ctx.CancellationToken;
 
+        // Validate payload (schema/shape). Treat invalid as *permanent*.
+        if (!IsValidJson(msg.Payload))
+        {
+            logger.LogWarning("Invalid JSON payload.");
+            return;
+        }
+            
         var handler = registry.Resolve(msg.JobType);
         if (handler is null)
         {
@@ -39,7 +49,7 @@ public sealed class ProcessJobConsumer(
 
         try
         {
-            await Retry(logger).ExecuteAsync(async () =>
+            await TransientRetry(logger).ExecuteAsync(async () =>
             {
                 await handler.HandleAsync(msg.JobId, msg.Payload, ct);
                 await repo.MarkJobCompletedAsync(msg.JobId, ct);
@@ -52,5 +62,12 @@ public sealed class ProcessJobConsumer(
             // optional: log/notify; do NOT throw
             logger.LogWarning(ex, "Job {JobId} failed; requeued", msg.JobId);
         }
+    }
+
+    static bool IsValidJson(string s)
+    {
+        if(s == null) return false;
+        try { using var _ = JsonDocument.Parse(s); return true; }
+        catch { return false; }
     }
 }
