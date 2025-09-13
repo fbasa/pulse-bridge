@@ -6,10 +6,10 @@ PulseBridge.Web = https://ui.localtest.me/
 PulseBridge.Api = https://api.localtest.me/  
 OpenTelemetry = https://otel.localtest.me/search  
 
+![diagram](diagram.png)
+
 https://api.localtest.me/api/jobs  
 https://api.localtest.me/api/jobs/insert  
-
-![diagram](diagram.png)
 
 ## build all images (docker-bake.hcl)
 ```docker buildx bake```  
