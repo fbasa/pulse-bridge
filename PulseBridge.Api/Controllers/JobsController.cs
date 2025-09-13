@@ -14,6 +14,12 @@ public sealed class JobsController : BaseApiController
     {
         return Ok(await Sender.Send(new SignalRJobsQuery(), ct));
     }
+
+    [HttpGet("insert")]
+    public async Task<IActionResult> InsertJob(CancellationToken ct = default)
+    {
+        return Ok(await Sender.Send(new SignalRJobCommand(), ct));
+    }
 }
 
 
@@ -28,5 +34,15 @@ public sealed class SignalRJobsQueryHandler(IJobQueueRepository repo) : IRequest
     public async Task<IEnumerable<SignalRJob>> Handle(SignalRJobsQuery request, CancellationToken ct)
     {
         return await repo.GetSignalRJobsAsync(ct);
+    }
+}
+
+public sealed record SignalRJobCommand() : IRequest<int> { }
+
+public sealed class SinalRJobCommandHandler(IJobQueueRepository repo) : IRequestHandler<SignalRJobCommand, int>
+{
+    public async Task<int> Handle(SignalRJobCommand request, CancellationToken ct)
+    {
+        return await repo.InjsertSignalRJobAsync(ct);
     }
 }

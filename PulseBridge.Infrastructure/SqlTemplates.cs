@@ -46,4 +46,6 @@ public class SqlTemplates
                 WHERE JobType = 'SignalR'
                 ORDER BY JobId DESC
                 OFFSET 0 ROWS FETCH NEXT 25 ROWS ONLY";
+
+    public const string InsertSignalRJob = @"INSERT INTO [dbo].[QRTZ_JobQueue]([JobType],[Payload],[Status],[Attempts],[AvailableAt])VALUES('SignalR','Test payload',0,0,GETUTCDATE())";
 }

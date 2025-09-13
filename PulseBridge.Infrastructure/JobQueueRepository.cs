@@ -36,4 +36,10 @@ public sealed class JobQueueRepository(IDbConnectionFactory factory) : IJobQueue
         var rows = await con.QueryAsync<SignalRJob>(new CommandDefinition(commandText: SqlTemplates.GetSignalRJobs, cancellationToken: ct));
         return rows.AsList();
     }
+
+    public async Task<int> InjsertSignalRJobAsync(CancellationToken ct)
+    {
+        using var con = await factory.OpenAsync(ct);
+        return await con.ExecuteAsync(new CommandDefinition(commandText: SqlTemplates.InsertSignalRJob, cancellationToken: ct));
+    }
 }
