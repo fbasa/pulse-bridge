@@ -136,12 +136,12 @@ services:
     command: ["redis-server", "--appendonly", "yes","--requirepass","${REDIS_PW}"]  # Enable AOF persistence
     container_name: pulse-bridge-redis  
     networks: [data_net]  # Internal data tier only
-    ports:
-      - "6379:6379"   # Expose only if needed for external access
+    #ports:
+      #- "6379:6379"   # Expose only if needed for external access
     volumes:
       - redisdata:/data  
     healthcheck:
-      test: ["CMD", "redis-cli", "${REDIS_PW}", "ping"]  # Liveness probe
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PW}", "ping"]  # Liveness probe
       interval: 10s
       timeout: 5s
       retries: 10
