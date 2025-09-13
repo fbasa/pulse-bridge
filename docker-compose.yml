@@ -4,7 +4,6 @@ name: pulse-bridge
 
 x-env: &app-env  
   ASPNETCORE_ENVIRONMENT: Development  
-  #ASPNETCORE_URLS: http://0.0.0.0:8080 
 
   # App settings (override via .env)
   ConnectionStrings__QuartzNet: ${DB_CONN}  
@@ -61,6 +60,8 @@ services:
     environment:
       <<: *app-env  # Merge common .NET env
       ASPNETCORE_URLS: http://+:8080  # DB for Quartz.NET
+      #App__SendAndReceiveUrl: http://api:8080/api/external/send  # SignalR endpoint for Worker
+      #App__IntervalInSeconds: 5  # Worker polling interval
     labels:
       - traefik.enable=true  # Opt-in to Traefik routing
       - traefik.http.routers.api.rule=Host(`api.localtest.me`)  # Route by host
