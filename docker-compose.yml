@@ -5,6 +5,10 @@ name: pulse-bridge
 x-env: &app-env  
   ASPNETCORE_ENVIRONMENT: Development  
 
+  # OpenTelemetry settings (override via .env)
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-service}
+
   # App settings (override via .env)
   ConnectionStrings__QuartzNet: ${DB_CONN}  
   ConnectionStrings__Redis: redis:${REDIS_PORT},password=${REDIS_PW} 
@@ -18,22 +22,27 @@ networks:
   edge_net: { driver: bridge }  # Public edge for ingress/host access
   app_net: { driver: bridge, internal: true }  # Internal app-only network sql/redis/rabbitmq
   data_net: { driver: bridge, internal: true }  
+  
+secrets:
+  sql_sa_password: { file: ./traefik/secrets/sql_sa_password.txt }
+  rabbitmq_password: { file: ./traefik/secrets/rabbitmq_password.txt }
+  redis_password: { file: ./traefik/secrets/redis_password.txt }
 
 services:
   traefik:
     image: traefik:v3.1  # Reverse proxy and router
     command:
-      - --api.dashboard=true  # Enable built-in dashboard (internal)
+      - --api.dashboard=false  # Enable built-in dashboard (internal)
       - --providers.docker=true  # Watch Docker for dynamic config
-      #- --api.insecure=true  # Exposes dashboard without auth (avoid in prod)
       - --providers.docker.exposedbydefault=false  # Require explicit opt-in via labels
-      - --entrypoints.web.address=:80  # HTTP entrypoint on port 80
-      # For local HTTPS, uncomment and provide certs
       - --entrypoints.websecure.address=:443  # HTTPS entrypoint
       - --providers.file.filename=/etc/traefik/dynamic.yml
+      #- --api.insecure=true  # Exposes dashboard without auth (avoid in prod)
+      #- --entrypoints.web.address=:80  # HTTP entrypoint on port 80
+      # For local HTTPS, uncomment and provide certs
     ports:
-      - "80:80"  # Expose HTTP from host to Traefik
       - "443:443"  # Expose HTTPS if configured
+      #- "80:80"  # Expose HTTP from host to Traefik
     volumes:
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - ./traefik/certs:/certs:ro
