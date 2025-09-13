@@ -5,18 +5,33 @@ using System.Text.Json;
 
 namespace PulseBridge.Api.Caching;
 
-public sealed class QueryCacheBehavior<TRequest, TResponse>(IDistributedCache dist, IMemoryCache mem)
+public sealed class QueryCacheBehavior<TRequest, TResponse>(IDistributedCache dist, IMemoryCache mem, ILoggerFactory factory)
   : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
     {
-        if (request is not ICacheableQuery cq) return await next();
+        var logger = factory.CreateLogger("QueryCacheBehavior");
+        if (request is not ICacheableQuery cq)
+        {
+            logger.LogInformation("Request is not cacheable.");
+            return await next();
+        }
 
+        logger.LogInformation("Request is cacheable.");
+    
         // Prefer distributed cache if configured; fall back to in-memory
         if (dist is not null)
         {
             var cached = await dist.GetStringAsync(cq.CacheKey, ct);
-            if (cached is not null) return JsonSerializer.Deserialize<TResponse>(cached)!;
+            if (cached is not null)
+            {
+                logger.LogInformation("cached is not null.");
+                return JsonSerializer.Deserialize<TResponse>(cached)!;
+            }
+            else
+            {
+                logger.LogInformation("cached is null.");
+            }
 
             var resp = await next();
             var ttl = cq.Ttl ?? TimeSpan.FromSeconds(30);

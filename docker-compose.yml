@@ -4,7 +4,7 @@ name: pulse-bridge
 
 x-env: &app-env  
   ASPNETCORE_ENVIRONMENT: Development  
-  ASPNETCORE_URLS: http://0.0.0.0:8080 
+  #ASPNETCORE_URLS: http://0.0.0.0:8080 
 
   # App settings (override via .env)
   ConnectionStrings__QuartzNet: ${DB_CONN}  
@@ -59,7 +59,8 @@ services:
     image: pulse-bridge-api:1.0  
     container_name: pulse-bridge-api  
     environment:
-      - ASPNETCORE_URLS=http://+:8080  # Bind API to port 8080
+      <<: *app-env  # Merge common .NET env
+      ASPNETCORE_URLS: http://+:8080  # DB for Quartz.NET
     labels:
       - traefik.enable=true  # Opt-in to Traefik routing
       - traefik.http.routers.api.rule=Host(`api.localtest.me`)  # Route by host
@@ -79,7 +80,7 @@ services:
       # Optional niceties:
       - traefik.http.middlewares.api-cors.headers.addvaryheader=true  # Proper caching of CORS responses
       - traefik.http.middlewares.api-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
-    networks: [app_net]  # Internal only; fronted by Traefik
+    networks: [app_net, data_net]  # Internal only; fronted by Traefik
     restart: unless-stopped  # Auto-restart for resilience
 
   worker:
@@ -132,15 +133,15 @@ services:
 
   redis:
     image: redis:7.2  
-    command: ["redis-server", "--appendonly", "yes"]  # Enable AOF persistence
+    command: ["redis-server", "--appendonly", "yes","--requirepass","${REDIS_PW}"]  # Enable AOF persistence
     container_name: pulse-bridge-redis  
     networks: [data_net]  # Internal data tier only
-    #ports:
-      #- "6379:6379"   # Expose only if needed for external access
+    ports:
+      - "6379:6379"   # Expose only if needed for external access
     volumes:
       - redisdata:/data  
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]  # Liveness probe
+      test: ["CMD", "redis-cli", "${REDIS_PW}", "ping"]  # Liveness probe
       interval: 10s
       timeout: 5s
       retries: 10

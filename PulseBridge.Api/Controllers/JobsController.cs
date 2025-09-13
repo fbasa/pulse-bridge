@@ -1,12 +1,32 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using PulseBridge.Api.Caching;
+using PulseBridge.Contracts;
+using PulseBridge.Infrastructure;
 
-namespace PulseBridge.Api.Controllers
+namespace PulseBridge.Api.Controllers;
+public sealed class JobsController : BaseApiController
 {
-    public class JobsController : Controller
+    public JobsController(ISender sender) : base(sender) { }
+
+    [HttpGet]
+    public async Task<IActionResult> List(CancellationToken ct = default)
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return Ok(await Sender.Send(new SignalRJobsQuery(), ct));
+    }
+}
+
+
+public sealed record SignalRJobsQuery() : IRequest<IEnumerable<SignalRJob>>, ICacheableQuery
+{
+    public string CacheKey => "jobs:all";
+    public TimeSpan? Ttl => TimeSpan.FromSeconds(30);
+}
+
+public sealed class SignalRJobsQueryHandler(IJobQueueRepository repo) : IRequestHandler<SignalRJobsQuery, IEnumerable<SignalRJob>>
+{
+    public async Task<IEnumerable<SignalRJob>> Handle(SignalRJobsQuery request, CancellationToken ct)
+    {
+        return await repo.GetSignalRJobsAsync(ct);
     }
 }

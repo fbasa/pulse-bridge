@@ -39,4 +39,11 @@ public class SqlTemplates
                 SET Status=2, LockedAt=NULL, LockedBy=NULL, LastError=NULL
                 WHERE JobId = @jobId;
             ";
+
+    public const string GetSignalRJobs = @"
+                SELECT JobId, JobType, Payload, Status
+                FROM [dbo].[QRTZ_JobQueue]
+                WHERE JobType = 'SignalR'
+                ORDER BY JobId DESC
+                OFFSET 0 ROWS FETCH NEXT 25 ROWS ONLY";
 }

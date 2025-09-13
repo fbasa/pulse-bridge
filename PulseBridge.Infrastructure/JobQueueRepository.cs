@@ -29,4 +29,11 @@ public sealed class JobQueueRepository(IDbConnectionFactory factory) : IJobQueue
         using var con = await factory.OpenAsync(ct);
         await con.ExecuteAsync(new CommandDefinition(SqlTemplates.MarkJobCompleted, new { jobId }, cancellationToken: ct));
     }
+
+    public async Task<IReadOnlyList<SignalRJob>> GetSignalRJobsAsync(CancellationToken ct)
+    {
+        using var con = await factory.OpenAsync(ct);
+        var rows = await con.QueryAsync<SignalRJob>(new CommandDefinition(commandText: SqlTemplates.GetSignalRJobs, cancellationToken: ct));
+        return rows.AsList();
+    }
 }

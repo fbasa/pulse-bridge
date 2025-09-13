@@ -4,7 +4,9 @@ using PulseBridge.Scheduler;
 using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
-var conn_string = builder.Configuration.GetConnectionString("QuartzNet")!;
+var conn_string = builder.Configuration.GetConnectionString("QuartzNet");
+if (string.IsNullOrWhiteSpace(conn_string))
+    throw new InvalidOperationException("Missing connection string 'ConnectionStrings:QuartzNet' for Scheduler.");
 
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection(AppOptions.SectionName));
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
@@ -21,8 +23,8 @@ builder.Services.AddQuartz(q =>
         s.UseClustering();
         s.UseNewtonsoftJsonSerializer();
     });
-    
-    var opts = builder.Configuration.GetSection(AppOptions.SectionName).Get<AppOptions>()!;
+    // Bind options; fall back to defaults if section missing
+    var opts = builder.Configuration.GetSection(AppOptions.SectionName).Get<AppOptions>() ?? new AppOptions();
     var key = new JobKey("dequeue-and-publish", opts.WorkerGroup);
 
     q.AddJob<DequeueAndPublishHttpJob>(o => o.WithIdentity(key).StoreDurably());

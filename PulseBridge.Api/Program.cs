@@ -6,10 +6,14 @@ using Microsoft.Extensions.Caching.StackExchangeRedis;
 using PulseBridge.Api.Caching;
 using PulseBridge.Api.SignalR;
 using PulseBridge.Contracts;
+using PulseBridge.Infrastructure;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
+
+builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
+builder.Services.AddSingleton<IJobQueueRepository, JobQueueRepository>();
 
 // MVC (controllers)
 builder.Services.AddControllers()
@@ -24,7 +28,7 @@ builder.Services.AddMediatR(cfg =>
     // MediatR pipelines
     .AddTransient(typeof(IPipelineBehavior<,>), typeof(QueryCacheBehavior<,>));
 
-// Optional distributed cache (Redis): set ConnectionStrings:Redis to enable
+// set ConnectionStrings:Redis
 var redisCs = config.GetConnectionString("Redis");
 if (!string.IsNullOrWhiteSpace(redisCs))
 {
@@ -45,6 +49,9 @@ if (!string.IsNullOrWhiteSpace(redisCs))
         });
     });
 }
+
+// Fallback to in-memory cache
+builder.Services.AddMemoryCache();
 
 // Output caching
 builder.Services.AddOutputCache(options =>

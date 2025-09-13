@@ -8,4 +8,5 @@ public interface IJobQueueRepository
     Task RequeueWithBackoffAsync(long jobId, string error, int attempts, CancellationToken ct);
     Task MarkDispatchedAsync(long jobId, CancellationToken ct);
     Task MarkJobCompletedAsync(long jobId, CancellationToken ct);
+    Task<IReadOnlyList<SignalRJob>> GetSignalRJobsAsync(CancellationToken ct);
 }
