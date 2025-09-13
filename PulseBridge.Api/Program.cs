@@ -15,7 +15,6 @@ app.UseRouting();
 
 // Minimal sanity routes
 app.MapGet("/", () => Results.Ok("API up"));
-app.MapGet("/health", () => Results.Ok("healthy"));
 
 app.MapPost("/api/external/send", async ([FromBody] JobPayload payload, IHubContext<SchedulerHub, ISchedulerClient> hub) => {
     await hub.Clients.All.ReceiveMessage("signalr-user", payload.Message);

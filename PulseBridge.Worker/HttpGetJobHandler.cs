@@ -12,6 +12,11 @@ public sealed class HttpGetJobHandler(
     public string JobType => "SignalR";
     public async Task HandleAsync(long jobId, string payload, CancellationToken ct)
     {
+        if(string.IsNullOrWhiteSpace(opts.Value.SendAndReceiveUrl))
+        {
+            throw new InvalidOperationException("SendAndReceiveUrl is not configured");
+        };
+        
         // here you would switch on msg.JobType and route to proper handler
         var client = http.CreateClient("external-api");
 

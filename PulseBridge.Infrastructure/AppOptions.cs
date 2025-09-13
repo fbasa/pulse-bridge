@@ -9,5 +9,5 @@ public sealed class AppOptions
     public string WorkerGroup { get; init; } = "app";        // Quartz group for keys
     public bool UseRabbitMQ { get; init; } = false;          // enable RabbitMQ bus
     public int IntervalInSeconds { get; init; } = 30;
-    public string SendAndReceiveUrl { get; init; } = "http://api:8080/api/external/send"; // relative URL for sending messages
+    public string? SendAndReceiveUrl { get; set; } // relative URL for sending messages
 }

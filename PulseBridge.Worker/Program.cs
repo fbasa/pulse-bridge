@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddSingleton<IJobQueueRepository, JobQueueRepository>();
+builder.Services.Configure<AppOptions>(builder.Configuration.GetSection(AppOptions.SectionName));
 
 builder.Services.AddHttpClient("external-api")
     .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(10));
