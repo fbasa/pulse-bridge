@@ -89,7 +89,6 @@ services:
     environment: 
       <<: *app-env  # Reuse common .NET env
       App__SendAndReceiveUrl: http://api:8080/api/external/send  # SignalR endpoint
-      App__IntervalInSeconds: 5  # Worker polling interval
     depends_on:
       - rabbitmq  # Needs broker to connect
       - api  # Talks to API/SignalR
@@ -108,6 +107,7 @@ services:
       <<: *app-env  # Merge common env
       Quartz__JobStore: AdoNet  # Persist jobs in DB
       ConnectionStrings__QuartzNet: ${DB_CONN}  # DB for Quartz.NET
+      App__IntervalInSeconds: 5  # Worker polling interval
     depends_on:
       - sql  # Requires DB first
       - rabbitmq  # Publishes/consumes via broker
