@@ -24,11 +24,11 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddSingleton<IJobHandler, HttpGetJobHandler>();
 builder.Services.AddSingleton<IJobHandlerRegistry, JobHandlerRegistry>();
 
-builder.Services.AddMassTransit(x =>
+builder.Services.AddMassTransit(busConfig =>
 {
-    x.AddConsumer<ProcessJobConsumer>(c => c.ConcurrentMessageLimit = 32);
+    busConfig.AddConsumer<ProcessJobConsumer>(c => c.ConcurrentMessageLimit = 32);
 
-    x.UsingRabbitMq((context, cfg) =>
+    busConfig.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host(builder.Configuration["RabbitMq:Host"] ?? "localhost", "/", h =>
         {
