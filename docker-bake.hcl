@@ -1,10 +1,15 @@
 group "default" { 
-    targets = ["api","worker","scheduler","web"] 
+    targets = ["idp","api","worker","scheduler","web"] 
 }
 target "web" { 
     context = "PulseBridge.Web"
     dockerfile = "Dockerfile"
     tags = ["pulse-bridge-web:1.0"] 
+}
+target "idp" { 
+    context = "."
+    dockerfile = "PulseBridge.OpenIddict.Idp/Dockerfile"
+    tags = ["pulse-bridge-idp:1.0"] 
 }
 target "api" { 
     context = "."

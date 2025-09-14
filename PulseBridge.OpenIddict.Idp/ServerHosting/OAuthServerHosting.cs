@@ -7,7 +7,7 @@ public static class OAuthServerHosting
 {
     public static IServiceCollection AddConfiguredOpenIddict(this IServiceCollection services, IConfiguration cfg)
     {
-        var issuer = cfg["Auth:Issuer"]; // e.g., https://localhost:7210
+        var issuer = cfg["Auth:Issuer"] ?? "https://idp.localtest.me/"; // e.g., https://localhost:7210
 
         services.AddOpenIddict()
             .AddCore(options =>

@@ -11,6 +11,7 @@ x-env: &app-env
 
   # App settings (override via .env)
   ConnectionStrings__QuartzNet: ${DB_CONN}  
+  ConnectionStrings__IDP_DB: ${IDP_DB_CONN}  
   ConnectionStrings__Redis: redis:${REDIS_PORT},password=${REDIS_PW} 
 
   # RabbitMQ settings consumed by Worker/Scheduler
@@ -37,7 +38,7 @@ services:
       - --providers.docker.exposedbydefault=false  # Require explicit opt-in via labels
       - --entrypoints.websecure.address=:443  # HTTPS entrypoint
       - --providers.file.filename=/etc/traefik/dynamic.yml
-      #- --api.insecure=true  # Exposes dashboard without auth (avoid in prod)
+      #- --api.insecure=true  # Expose dashboard without auth (local only)
       #- --entrypoints.web.address=:80  # HTTP entrypoint on port 80
       # For local HTTPS, uncomment and provide certs
     ports:
@@ -69,6 +70,34 @@ services:
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  # Auto-restart for resilience
 
+  idp:
+    image: pulse-bridge-idp:1.0
+    container_name: pulse-bridge-idp
+    environment:
+      <<: *app-env  # Merge common .NET env
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"   # ensures original scheme/host from Traefik
+      # (Your app should also be configured with correct issuer/base URLs)
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=pulse-bridge_app_net
+      - traefik.http.routers.idp.rule=Host(`idp.localtest.me`)
+      - traefik.http.routers.idp.entrypoints=websecure
+      - traefik.http.routers.idp.tls=true
+      - traefik.http.routers.idp.middlewares=gzip@file,secure-headers@file
+      - traefik.http.services.idp.loadbalancer.server.port=8080   # <-- fix
+    networks: [app_net, data_net]
+    depends_on: [sql, redis, otel-collector]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD","wget","-qO-","http://localhost:8080/health/ready"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      
   api:
     image: pulse-bridge-api:1.0  
     container_name: pulse-bridge-api  
@@ -154,9 +183,9 @@ services:
       MSSQL_PID: "Developer"  # Free dev edition
     networks: 
       - data_net  # Internal data tier only
-      #- edge_net  # Allow host access for management (dev only)
-    #ports:
-      #- "1433:1433"     # Allow host access for management (dev only)
+      - edge_net  # Allow host access for management (dev only)
+    ports:
+      - "1433:1433"     # Allow host access for management (dev only)
     volumes:
       - mssqldata:/var/opt/mssql  
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security

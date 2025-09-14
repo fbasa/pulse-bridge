@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
 
-var conn = builder.Configuration.GetConnectionString("DefaultConnection");
+var conn = builder.Configuration.GetConnectionString("IDP_DB");
 
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseSqlServer(conn, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "auth")));
@@ -42,7 +42,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("spa", p => p
-        .WithOrigins("http://localhost:4200")
+        .WithOrigins("http://localhost:4200", "https://ui.localtest.me")
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials());

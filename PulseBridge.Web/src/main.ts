@@ -9,7 +9,9 @@ import { AuthService } from './app/auth/auth.service';
 import { environment } from './environments/environment';
 
 
-function initAuthFactory(auth: AuthService) { return () => auth.initAuth(); }
+function initAuthFactory(auth: AuthService) { 
+  return () => console.log('init');//auth.initAuth(); 
+}
 
 
 bootstrapApplication(AppComponent, {
