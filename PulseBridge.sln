@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulseBridge.Infrastructure"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulseBridge.Contracts", "PulseBridge.Contracts\PulseBridge.Contracts.csproj", "{A7AD8C9E-1AE9-42FC-8A23-8A0334C20AFB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PulseBridge.OpenIddict.Idp", "PulseBridge.OpenIddict.Idp\PulseBridge.OpenIddict.Idp.csproj", "{57FAD230-49D8-43A1-80E5-7E9E1DE758A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,9 +51,17 @@ Global
 		{A7AD8C9E-1AE9-42FC-8A23-8A0334C20AFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7AD8C9E-1AE9-42FC-8A23-8A0334C20AFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7AD8C9E-1AE9-42FC-8A23-8A0334C20AFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57FAD230-49D8-43A1-80E5-7E9E1DE758A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57FAD230-49D8-43A1-80E5-7E9E1DE758A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57FAD230-49D8-43A1-80E5-7E9E1DE758A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57FAD230-49D8-43A1-80E5-7E9E1DE758A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C9E860C1-D319-435B-AD1C-689CCF9F80CC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{79906984-2F86-9389-3373-E9418603B764} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {07C4B429-9D4C-4531-8548-B971EA1110F4}

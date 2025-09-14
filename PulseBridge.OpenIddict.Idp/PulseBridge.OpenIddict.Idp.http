@@ -1,0 +1,6 @@
+@PulseBridge.OpenIddict.Idp_HostAddress = http://localhost:5217
+
+GET {{PulseBridge.OpenIddict.Idp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

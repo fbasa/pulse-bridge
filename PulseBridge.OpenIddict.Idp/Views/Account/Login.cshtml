@@ -1,0 +1,18 @@
+﻿@using PulseBridge.OpenIddict.Idp.Controllers
+@model LoginVm
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<body>
+    <form asp-action="Login" method="post">
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div><label>Username or Email</label><input name="UserName" asp-for="UserName" autocomplete="username" /></div>
+        <div><label>Password</label><input name="Password"  asp-for="Password" type="password" autocomplete="current-password" /></div>
+        <div><label><input asp-for="RememberMe" type="checkbox" /> Remember me</label></div>
+        <button type="submit">Sign in</button>
+        @Html.AntiForgeryToken()
+    </form>
+</body>
+</html>
