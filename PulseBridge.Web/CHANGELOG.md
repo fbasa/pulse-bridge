@@ -4,9 +4,9 @@ The following tools were used to generate this project:
 - Angular CLI (ng)
 
 The following steps were used to generate this project:
-- Create Angular project with ng: `ng new PulseBridge.Web --defaults --skip-install --skip-git --no-standalone `.
+- Create Angular project with ng: `ng new Angular.OpenIddictWeb --defaults --skip-install --skip-git --no-standalone `.
 - Update angular.json with port.
-- Create project file (`PulseBridge.Web.esproj`).
+- Create project file (`Angular.OpenIddictWeb.esproj`).
 - Create `launch.json` to enable debugging.
 - Update package.json to add `jest-editor-support`.
 - Update `start` script in `package.json` to specify host.

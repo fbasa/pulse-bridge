@@ -1,7 +1,7 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { environment } from '../environments/environment';
+import { environment } from '../../environments/environment';
 
 export interface JobPayload {
   user: string;

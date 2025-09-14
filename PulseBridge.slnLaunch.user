@@ -3,15 +3,15 @@
     "Name": "New Profile",
     "Projects": [
       {
-        "Path": "PulseBridge.Scheduler\\PulseBridge.Scheduler.csproj",
+        "Path": "PulseBridge.OpenIddict.Idp\\PulseBridge.OpenIddict.Idp.csproj",
         "Action": "Start"
       },
       {
-        "Path": "PulseBridge.Worker\\PulseBridge.Worker.csproj",
+        "Path": "PulseBridge.Payment.Api\\PulseBridge.Payment.Api.csproj",
         "Action": "Start"
       },
       {
-        "Path": "PulseBridge.Api\\PulseBridge.Api.csproj",
+        "Path": "PulseBridge.Accounting.Api\\PulseBridge.Accounting.Api.csproj",
         "Action": "Start"
       }
     ]

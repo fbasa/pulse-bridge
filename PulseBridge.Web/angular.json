@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "PulseBridge.Web": {
+    "Angular.OpenIddictWeb": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -23,7 +23,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/pulse-bridge.web",
+            "outputPath": "dist/angular.open-iddict-web",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -69,15 +69,15 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "PulseBridge.Web:build:production"
+              "buildTarget": "Angular.OpenIddictWeb:build:production"
             },
             "development": {
-              "buildTarget": "PulseBridge.Web:build:development"
+              "buildTarget": "Angular.OpenIddictWeb:build:development"
             }
           },
           "defaultConfiguration": "development",
           "options": {
-            "port": 51844
+            "port": 50407
           }
         },
         "extract-i18n": {

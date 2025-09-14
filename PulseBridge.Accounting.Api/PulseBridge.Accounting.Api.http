@@ -1,0 +1,6 @@
+@PulseBridge.Accounting.Api_HostAddress = http://localhost:5157
+
+GET {{PulseBridge.Accounting.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

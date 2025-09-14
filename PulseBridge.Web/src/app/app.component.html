@@ -1,3 +1,8 @@
+<nav class="p-3 flex gap-3 border-b">
+  <a routerLink="/home">Home</a>&nbsp;
+  <a routerLink="/protected">Protected</a>&nbsp;
+  <a href="javascript:void(0);" (click)="logout()">Logout</a>
+</nav>
 
 <p>
   Connection status: <b>{{ connState() }}</b>
@@ -6,4 +11,22 @@
 <div *ngFor="let m of messages()">
   <b>{{ m.user }}</b>: {{ m.message }}
 </div>
-<router-outlet />
+
+<section class="p-4">
+  <h1>Angular + OpenIddict (Code + PKCE)</h1>
+
+
+  <div *ngIf="auth.isLoggedIn(); else askLogin">
+
+
+    <button (click)="loadPayments()">Call Payments API</button>
+    <button (click)="loadAccounting()">Call Accounting API</button>
+    <h3>Payments</h3>
+    <pre>{{ payments | json }}</pre>
+    <h3>Accounting</h3>
+    <pre>{{ accounting | json }}</pre>
+  </div>
+  <ng-template #askLogin>
+    <button (click)="auth.login()">Login</button>
+  </ng-template>
+</section>
