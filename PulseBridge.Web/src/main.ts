@@ -10,7 +10,7 @@ import { environment } from './environments/environment';
 
 
 function initAuthFactory(auth: AuthService) { 
-  return () => console.log('init');//auth.initAuth(); 
+  return () => auth.initAuth(); 
 }
 
 

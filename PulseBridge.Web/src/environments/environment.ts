@@ -4,8 +4,8 @@ export const environment = {
     auth: {
         issuer: 'https://idp.localtest.me/', // OpenIddict Issuer (https://idp.localtest.me/.well-known/openid-configuration)
         clientId: 'angular-spa', // MUST exist in OpenIddict applications
-        redirectUri: 'http://localhost:4200/auth/callback',//["http://localhost:4200/auth/callback"]
-        postLogoutRedirectUri: 'http://localhost:4200/',
+        redirectUri: 'https://ui.localtest.me/auth/callback',//["http://localhost:4200/auth/callback"]
+        postLogoutRedirectUri: 'https://ui.localtest.me/',
         scopes: 'openid profile payments.read accounting.read',
     },
     apis: {

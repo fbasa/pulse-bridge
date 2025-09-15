@@ -99,3 +99,5 @@ You’ll get a fresh SQL instance with SA set to the .env value.
 ```choco install mkcert```  
 ```mkcert -install```
 
+## IDP check
+```curl.exe -vk https://idp.localtest.me/.well-known/openid-configuration```

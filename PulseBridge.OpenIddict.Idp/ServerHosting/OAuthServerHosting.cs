@@ -7,13 +7,12 @@ public static class OAuthServerHosting
 {
     public static IServiceCollection AddConfiguredOpenIddict(this IServiceCollection services, IConfiguration cfg)
     {
-        var issuer = cfg["Auth:Issuer"] ?? "https://idp.localtest.me/"; // e.g., https://localhost:7210
+        var issuer = cfg["Auth:Issuer"] ?? "https://idp.localtest.me"; // e.g., https://localhost:7210
 
         services.AddOpenIddict()
             .AddCore(options =>
             {
-                options.UseEntityFrameworkCore()
-                       .UseDbContext<AppDbContext>();
+                options.UseEntityFrameworkCore().UseDbContext<AppDbContext>();
             })
             .AddServer(options =>
             {
@@ -26,13 +25,13 @@ public static class OAuthServerHosting
                        .SetEndSessionEndpointUris("/connect/logout");
 
                 // Flows
-                options.AllowAuthorizationCodeFlow()
-                       .RequireProofKeyForCodeExchange();     // PKCE for public clients
+                options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();     // PKCE for public clients
                 options.AllowClientCredentialsFlow();
                 options.AllowRefreshTokenFlow();
 
                 // Scopes (Duende IdentityResources -> OpenIddict scopes)
                 options.RegisterScopes(
+                    OpenIddictConstants.Scopes.OpenId,
                     OpenIddictConstants.Scopes.Profile,
                     OpenIddictConstants.Scopes.Email,
                     OpenIddictConstants.Scopes.Roles,
@@ -49,7 +48,9 @@ public static class OAuthServerHosting
                        .EnableAuthorizationEndpointPassthrough()
                        .EnableTokenEndpointPassthrough()
                        .EnableUserInfoEndpointPassthrough()
-                       .EnableEndSessionEndpointPassthrough(); 
+                       .EnableEndSessionEndpointPassthrough();
+
+                
             });
 
         return services;

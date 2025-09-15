@@ -7,18 +7,18 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    protected override void OnModelCreating(ModelBuilder b)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(b);
+        base.OnModelCreating(builder);
 
         // Identity tweaks
-        b.Entity<AppUser>(u =>
+        builder.Entity<AppUser>(u =>
         {
             u.Property(x => x.DisplayName).HasMaxLength(128);
             u.HasIndex(x => x.TenantId);
         });
 
         // OpenIddict stores (applications, authorizations, scopes, tokens)
-        b.UseOpenIddict();
+        builder.UseOpenIddict();
     }
 }
