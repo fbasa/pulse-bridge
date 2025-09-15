@@ -21,8 +21,8 @@ public class OAuthSeed : IHostedService
                 ClientId = "angular-spa",
                 ConsentType = OpenIddictConstants.ConsentTypes.Explicit,
                 DisplayName = "Angular Web App",
-                RedirectUris = { new Uri("http://localhost:4200/auth/callback") },
-                PostLogoutRedirectUris = { new Uri("http://localhost:4200/") },
+                RedirectUris = { new Uri("https://ui.localtest.me/auth/callback") },
+                PostLogoutRedirectUris = { new Uri("https://ui.localtest.me/") },
                 Permissions =
                 {
                     // endpoints + flows
