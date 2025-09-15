@@ -4,8 +4,16 @@ using OpenTelemetry.Trace;
 using PulseBridge.Infrastructure;
 using PulseBridge.Scheduler;
 using Quartz;
+using Serilog;
+
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
+
 var conn_string = builder.Configuration.GetConnectionString("QuartzNet");
 if (string.IsNullOrWhiteSpace(conn_string))
     throw new InvalidOperationException("Missing connection string 'ConnectionStrings:QuartzNet' for Scheduler.");
@@ -64,6 +72,8 @@ builder.Services.AddSingleton<IQuartzSchemaBootstrapper, QuartzSchemaBootstrappe
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
+
 // Ensure Quartz schema before the host starts taking traffic
 await using (var scope = app.Services.CreateAsyncScope())
 {
@@ -72,4 +82,7 @@ await using (var scope = app.Services.CreateAsyncScope())
 }
 
 app.MapGet("/", () => "Scheduler up");
+
+logger.Information("Scheduler up and running!");
+
 app.Run();

@@ -8,9 +8,9 @@ using PulseBridge.OpenIddict.Idp.Identity;
 using PulseBridge.OpenIddict.Idp.ServerHosting;
 using Serilog;
 
-// var logger = new LoggerConfiguration()
-//     .WriteTo.Console()
-//     .CreateBootstrapLogger();
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,8 +73,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(o =>
 
 var app = builder.Build();
 
-//logger.Information("Done app build!");
-
 app.UseForwardedHeaders();
 app.UseSerilogRequestLogging();
 
@@ -101,5 +99,7 @@ using (var scope = app.Services.CreateScope())
 await app.Services.EnsureDefaultAdminAsync();
 
 app.MapGet("/", () => Results.Ok("IDP up"));
+
+logger.Information("IDP up and running!");
 
 app.Run();

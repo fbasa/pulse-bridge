@@ -3,7 +3,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
 
 var authAuthority = builder.Configuration["Auth:Issuer"];
@@ -46,5 +51,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapGet("/", () => Results.Ok("Accounting-api up"));
+
+logger.Information("Accounting-API up and running!");
 
 app.Run();

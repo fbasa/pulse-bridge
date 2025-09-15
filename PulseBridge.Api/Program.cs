@@ -10,9 +10,16 @@ using PulseBridge.Api.SignalR;
 using PulseBridge.Contracts;
 using PulseBridge.Infrastructure;
 using StackExchange.Redis;
+using Serilog;
+
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
+
+builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
 
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddSingleton<IJobQueueRepository, JobQueueRepository>();
@@ -74,6 +81,8 @@ builder.Services.AddOpenTelemetry()
         
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
+
 app.UseRouting();
 // output caching
 app.UseOutputCache();
@@ -100,5 +109,7 @@ app.MapControllers();
 
 // Map the hub and explicitly require CORS
 app.MapHub<SchedulerHub>("/hubs/schedulerHub");
+
+logger.Information("SignalR-API up and running!");
 
 app.Run();

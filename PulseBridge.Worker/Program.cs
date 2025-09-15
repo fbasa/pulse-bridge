@@ -3,8 +3,15 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using PulseBridge.Infrastructure;
 using PulseBridge.Worker;
+using Serilog;
+
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
 
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddSingleton<IJobQueueRepository, JobQueueRepository>();
@@ -42,5 +49,10 @@ builder.Services.AddMassTransit(busConfig =>
 });
 
 var app = builder.Build();
+app.UseSerilogRequestLogging();
+
 app.MapGet("/", () => "Worker up");
+
+logger.Information("Worker up and running!");
+
 app.Run();
