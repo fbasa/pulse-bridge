@@ -8,9 +8,9 @@ using PulseBridge.OpenIddict.Idp.Identity;
 using PulseBridge.OpenIddict.Idp.ServerHosting;
 using Serilog;
 
-var logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
+// var logger = new LoggerConfiguration()
+//     .WriteTo.Console()
+//     .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,25 +38,19 @@ builder.Services.Configure<IdentityOptions>(o =>
     o.ClaimsIdentity.RoleClaimType = OpenIddictConstants.Claims.Role;    // "role"
 });
 
-logger.Information("Configuring OpenId Identity ");
+//logger.Information("Configuring OpenId Identity ");
 
 // AddOpenIddict() registration (IdP)
-try
-{
-    builder.Services.AddConfiguredOpenIddict(builder.Configuration);
-}
-catch (Exception ex)
-{
-    logger.Information("Error Configuring {Message}", ex.Message);
-}
-builder.Services.Configure<OpenIddictServerAspNetCoreOptions>(opt =>
-{
-#if DEBUG
-    opt.DisableTransportSecurityRequirement = true; // DEV ONLY
-#endif
-});
+builder.Services.AddConfiguredOpenIddict(builder.Configuration);
 
-logger.Information("Done Configuring OpenId Identity ");
+// builder.Services.Configure<OpenIddictServerAspNetCoreOptions>(opt =>
+// {
+// #if DEBUG
+//     opt.DisableTransportSecurityRequirement = true; // DEV ONLY
+// #endif
+// });
+
+//logger.Information("Done Configuring OpenId Identity ");
 
 builder.Services.AddHostedService<OAuthSeed>();
 
@@ -79,7 +73,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(o =>
 
 var app = builder.Build();
 
-logger.Information("Done app build!");
+//logger.Information("Done app build!");
 
 app.UseForwardedHeaders();
 app.UseSerilogRequestLogging();
@@ -108,5 +102,4 @@ await app.Services.EnsureDefaultAdminAsync();
 
 app.MapGet("/", () => Results.Ok("IDP up"));
 
-logger.Information("OpenId Identity Up and running!");
 app.Run();

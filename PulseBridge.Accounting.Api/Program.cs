@@ -27,7 +27,7 @@ builder.Services.AddControllers();
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("spa", p => p
-        .WithOrigins("http://localhost:4200")
+        .WithOrigins("https://ui.localtest.me")
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials());
@@ -44,4 +44,7 @@ app.UseCors("spa");
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/", () => Results.Ok("Accounting-api up"));
+
 app.Run();

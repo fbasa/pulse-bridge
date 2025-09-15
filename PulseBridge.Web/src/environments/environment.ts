@@ -9,7 +9,7 @@ export const environment = {
         scopes: 'openid profile payments.read accounting.read',
     },
     apis: {
-        payments: 'https://localhost:7024', // Payments.Api
-        accounting: 'https://localhost:7095' // Accounting.Api
+        payments: 'https://payapi.localtest.me', // Payments.Api
+        accounting: 'https://acctapi.localtest.me' // Accounting.Api
     }
 };

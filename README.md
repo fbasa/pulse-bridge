@@ -87,7 +87,7 @@ You’ll get a fresh SQL instance with SA set to the .env value.
 
 ## Make a cert for your dev hosts
 ```mkdir -p traefik/certs```  
-```mkcert -key-file traefik/certs/dev.key -cert-file traefik/certs/dev.crt ui.localtest.me api.localtest.me otel.localtest.me idp.localtest.me api.pay.localtest.me api.acct.localtest.me```
+```mkcert -key-file traefik/certs/dev.key -cert-file traefik/certs/dev.crt ui.localtest.me api.localtest.me otel.localtest.me idp.localtest.me payapi.localtest.me acctapi.localtest.me```
 
 
 ## If mkcert command not found, install choco first

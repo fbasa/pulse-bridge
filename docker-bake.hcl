@@ -1,5 +1,5 @@
 group "default" { 
-    targets = ["idp","api","worker","scheduler","web"] 
+    targets = ["idp","api","worker","scheduler","web","payapi","acctapi"] 
 }
 target "web" { 
     context = "PulseBridge.Web"
@@ -15,6 +15,16 @@ target "api" {
     context = "."
     dockerfile = "PulseBridge.Api/Dockerfile"
     tags = ["pulse-bridge-api:1.0"] 
+}
+target "payapi" { 
+    context = "."
+    dockerfile = "PulseBridge.Payment.Api/Dockerfile"
+    tags = ["pulse-bridge-payapi:1.0"] 
+}
+target "acctapi" { 
+    context = "."
+    dockerfile = "PulseBridge.Accounting.Api/Dockerfile"
+    tags = ["pulse-bridge-acctapi:1.0"] 
 }
 target "worker" { 
     context = "."

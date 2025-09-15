@@ -28,8 +28,8 @@ export class AppComponent implements OnInit {
     this.signalrApi.connectionState$.subscribe(state => this.connState.set(state));
     this.connect();
 
-    // this.loadPayments(); 
-    // this.loadAccounting();
+    this.loadPayments(); 
+    this.loadAccounting();
   }
   loadPayments() { this.paymentsApi.getAll().subscribe(r => this.payments = r); }
   loadAccounting() { this.accountingApi.getAll().subscribe(r => this.accounting = r); }
