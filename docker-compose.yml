@@ -70,6 +70,20 @@ services:
       - traefik.http.routers.acctapi.middlewares=gzip@file,secure-headers
       - traefik.http.services.acctapi.loadbalancer.server.port=8080  # Container port
 
+        # --- CORS middleware (for UI -> idp) ---
+      - traefik.http.routers.acctapi.middlewares=acctapi-cors@docker  # Attach CORS middleware
+      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolalloworiginlist=https://ui.localtest.me  # Allowed origin
+      # Methods needed by SignalR (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
+      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS  # Allow needed methods
+      # Headers SignalR typically sends (include Authorization if you use JWT)
+      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With,X-SignalR-User-Agent  # Allow headers SignalR/JWT use
+      # If you prefer, you can allow all headers instead of listing:
+      # - traefik.http.middlewares.acctapi-cors.headers.accesscontrolallowheaders=*
+      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolallowcredentials=true  # Allow cookies/credentials
+      # Optional niceties:
+      - traefik.http.middlewares.acctapi-cors.headers.addvaryheader=true  # Proper caching of CORS responses
+      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
+
     networks: [app_net, data_net]  # Internal only; fronted by Traefik
     depends_on:
       - sql  # Needs DB
@@ -93,6 +107,20 @@ services:
       - traefik.http.routers.payapi.middlewares=gzip@file,secure-headers
       - traefik.http.services.payapi.loadbalancer.server.port=8080  # Container port
       
+        # --- CORS middleware (for UI -> idp) ---
+      - traefik.http.routers.payapi.middlewares=payapi-cors@docker  # Attach CORS middleware
+      - traefik.http.middlewares.payapi-cors.headers.accesscontrolalloworiginlist=https://ui.localtest.me  # Allowed origin
+      # Methods needed by SignalR (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
+      - traefik.http.middlewares.payapi-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS  # Allow needed methods
+      # Headers SignalR typically sends (include Authorization if you use JWT)
+      - traefik.http.middlewares.payapi-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With,X-SignalR-User-Agent  # Allow headers SignalR/JWT use
+      # If you prefer, you can allow all headers instead of listing:
+      # - traefik.http.middlewares.payapi-cors.headers.accesscontrolallowheaders=*
+      - traefik.http.middlewares.payapi-cors.headers.accesscontrolallowcredentials=true  # Allow cookies/credentials
+      # Optional niceties:
+      - traefik.http.middlewares.payapi-cors.headers.addvaryheader=true  # Proper caching of CORS responses
+      - traefik.http.middlewares.payapi-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
+
     networks: [app_net, data_net]  # Internal only; fronted by Traefik
     depends_on:
       - sql  # Needs DB
