@@ -98,7 +98,7 @@ using (var scope = app.Services.CreateScope())
 }
 await app.Services.EnsureDefaultAdminAsync();
 
-app.MapGet("/", () => Results.Ok("IDP up"));
+app.MapGet("/health/ready", () => Results.Ok("IDP up"));
 
 logger.Information("IDP up and running!");
 

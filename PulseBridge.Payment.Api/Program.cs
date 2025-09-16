@@ -50,7 +50,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/", () => Results.Ok("Payment-api up"));
+app.MapGet("/health/ready", () => Results.Ok("Payment-api up"));
 
 logger.Information("Payment-API up and running!");
 

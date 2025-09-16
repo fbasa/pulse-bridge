@@ -97,7 +97,7 @@ app.Use(async (ctx, next) =>
 });
 
 // Minimal sanity routes
-app.MapGet("/", () => Results.Ok("API up"));
+app.MapGet("/health/ready", () => Results.Ok("API up"));
 
 app.MapPost("/api/external/send", async ([FromBody] JobPayload payload, IHubContext<SchedulerHub, ISchedulerClient> hub) =>
 {
