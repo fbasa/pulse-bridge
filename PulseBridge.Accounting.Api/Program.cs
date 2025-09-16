@@ -44,8 +44,8 @@ app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseAuthentication();
 app.UseCors("spa");
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

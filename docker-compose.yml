@@ -39,8 +39,6 @@ services:
       - --entrypoints.websecure.address=:443  # HTTPS entrypoint
       - --providers.file.filename=/etc/traefik/dynamic.yml
       #- --api.insecure=true  # Expose dashboard without auth (local only)
-      #- --entrypoints.web.address=:80  # HTTP entrypoint on port 80
-      # For local HTTPS, uncomment and provide certs
     ports:
       - "443:443"  # Expose HTTPS if configured
       #- "80:80"  # Expose HTTP from host to Traefik
@@ -73,28 +71,12 @@ services:
       - traefik.http.routers.idp.tls=true  # Enable TLS
       - traefik.http.routers.idp.middlewares=retry-2@file,gzip@file,secure-headers@file
 
-      # load balancer service with health checks and custom server transport
+      # load balancer service with health checks
       - traefik.http.services.idp.loadbalancer.server.port=8080  # Container port
       - traefik.http.services.idp.loadbalancer.healthcheck.path=/health/ready
       - traefik.http.services.idp.loadbalancer.healthcheck.interval=10s
       - traefik.http.services.idp.loadbalancer.healthcheck.timeout=3s
 
-      # --- CORS middleware (for UI -> idp) ---
-      - traefik.http.routers.idp.middlewares=idp-cors@docker  # Attach CORS middleware
-      - traefik.http.middlewares.idp-cors.headers.accesscontrolalloworiginlist=https://ui.localtest.me  # Allowed origin
-      
-      # Methods needed (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
-      - traefik.http.middlewares.idp-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS  # Allow needed methods
-      
-      # Headers typically sends (include Authorization if you use JWT)
-      - traefik.http.middlewares.idp-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With  # Allow headers JWT use
-      
-      # If you prefer, you can allow all headers instead of listing:
-      - traefik.http.middlewares.idp-cors.headers.accesscontrolallowcredentials=true  # Allow cookies/credentials
-      
-      # Optional niceties:
-      - traefik.http.middlewares.idp-cors.headers.addvaryheader=true  # Proper caching of CORS responses
-      - traefik.http.middlewares.idp-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
     networks: [app_net, data_net]  # Internal only; fronted by Traefik
     depends_on:
       - sql  # Needs DB
@@ -121,28 +103,11 @@ services:
       - traefik.http.routers.acctapi.tls=true  # Enable TLS
       - traefik.http.routers.acctapi.middlewares=retry-2@file,gzip@file,secure-headers@file
 
-      # load balancer service with health checks and custom server transport
+      # load balancer service with health checks
       - traefik.http.services.acctapi.loadbalancer.server.port=8080  # Container port
       - traefik.http.services.acctapi.loadbalancer.healthcheck.path=/health/ready
       - traefik.http.services.acctapi.loadbalancer.healthcheck.interval=10s
       - traefik.http.services.acctapi.loadbalancer.healthcheck.timeout=3s
-
-        # --- CORS middleware (for UI -> accounting api) ---
-      - traefik.http.routers.acctapi.middlewares=acctapi-cors@docker  # Attach CORS middleware
-      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolalloworiginlist=https://ui.localtest.me  # Allowed origin
-      
-      # Methods needed (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
-      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS  # Allow needed methods
-      
-      # Headers typically sends (include Authorization if you use JWT)
-      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With  # Allow headers JWT use
-      
-      # If you prefer, you can allow all headers instead of listing:
-      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolallowcredentials=true  # Allow cookies/credentials
-      
-      # Optional niceties:
-      - traefik.http.middlewares.acctapi-cors.headers.addvaryheader=true  # Proper caching of CORS responses
-      - traefik.http.middlewares.acctapi-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
 
     networks: [app_net, data_net]  # Internal only; fronted by Traefik
     depends_on:
@@ -170,28 +135,11 @@ services:
       - traefik.http.routers.payapi.tls=true  # Enable TLS
       - traefik.http.routers.payapi.middlewares=retry-2@file,gzip@file,secure-headers@file
 
-      # load balancer service with health checks and custom server transport
+      # load balancer service with health checks
       - traefik.http.services.payapi.loadbalancer.server.port=8080  # Container port
       - traefik.http.services.payapi.loadbalancer.healthcheck.path=/health/ready
       - traefik.http.services.payapi.loadbalancer.healthcheck.interval=10s
       - traefik.http.services.payapi.loadbalancer.healthcheck.timeout=3s
-
-      # --- CORS middleware (for UI -> payment api) ---
-      - traefik.http.routers.payapi.middlewares=payapi-cors@docker  # Attach CORS middleware
-      - traefik.http.middlewares.payapi-cors.headers.accesscontrolalloworiginlist=https://ui.localtest.me  # Allowed origin
-      
-      # Methods needed (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
-      - traefik.http.middlewares.payapi-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS  # Allow needed methods
-      
-      # Headers typically sends (include Authorization if you use JWT)
-      - traefik.http.middlewares.payapi-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With  # Allow headers JWT use
-      
-      # If you prefer, you can allow all headers instead of listing:
-      - traefik.http.middlewares.payapi-cors.headers.accesscontrolallowcredentials=true  # Allow cookies/credentials
-      
-      # Optional niceties:
-      - traefik.http.middlewares.payapi-cors.headers.addvaryheader=true  # Proper caching of CORS responses
-      - traefik.http.middlewares.payapi-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
 
     networks: [app_net, data_net]  # Internal only; fronted by Traefik
     depends_on:
@@ -218,28 +166,12 @@ services:
       - traefik.http.routers.api.tls=true  # Enable TLS
       - traefik.http.routers.api.middlewares=retry-2@file,gzip@file,secure-headers@file
 
-      # load balancer service with health checks and custom server transport
+      # load balancer service with health checks
       - traefik.http.services.api.loadbalancer.server.port=8080  # Container port
       - traefik.http.services.api.loadbalancer.healthcheck.path=/health/ready
       - traefik.http.services.api.loadbalancer.healthcheck.interval=10s
       - traefik.http.services.api.loadbalancer.healthcheck.timeout=3s
 
-      # --- CORS middleware (for UI -> API) ---
-      - traefik.http.routers.api.middlewares=api-cors@docker  # Attach CORS middleware
-      - traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=https://ui.localtest.me  # Allowed origin
-      
-      # Methods needed by SignalR (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
-      - traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS  # Allow needed methods
-      
-      # Headers SignalR typically sends (include Authorization if you use JWT)
-      - traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With,X-SignalR-User-Agent  # Allow headers SignalR/JWT use
-      
-      # If you prefer, you can allow all headers instead of listing:
-      - traefik.http.middlewares.api-cors.headers.accesscontrolallowcredentials=true  # Allow cookies/credentials
-      
-      # Optional niceties:
-      - traefik.http.middlewares.api-cors.headers.addvaryheader=true  # Proper caching of CORS responses
-      - traefik.http.middlewares.api-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
     networks: [app_net, data_net]  # Internal only; fronted by Traefik
     depends_on:
       - sql  # Needs DB
@@ -253,7 +185,7 @@ services:
     container_name: pulse-bridge-web  
     environment:
       <<: *app-env  # Merge common .NET env
-      Auth__Issuer: https://idp.localtest.me  # <-- fix
+      Auth__Issuer: https://idp.localtest.me  
     labels:
       # Opt-in to Traefik routing
       - traefik.enable=true  

@@ -38,19 +38,8 @@ builder.Services.Configure<IdentityOptions>(o =>
     o.ClaimsIdentity.RoleClaimType = OpenIddictConstants.Claims.Role;    // "role"
 });
 
-//logger.Information("Configuring OpenId Identity ");
-
 // AddOpenIddict() registration (IdP)
 builder.Services.AddConfiguredOpenIddict(builder.Configuration);
-
-// builder.Services.Configure<OpenIddictServerAspNetCoreOptions>(opt =>
-// {
-// #if DEBUG
-//     opt.DisableTransportSecurityRequirement = true; // DEV ONLY
-// #endif
-// });
-
-//logger.Information("Done Configuring OpenId Identity ");
 
 builder.Services.AddHostedService<OAuthSeed>();
 
@@ -75,9 +64,6 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 app.UseSerilogRequestLogging();
-
-if (app.Environment.IsDevelopment())
-    app.UseDeveloperExceptionPage();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

@@ -37,6 +37,15 @@ builder.Services.AddMediatR(cfg =>
     // MediatR pipelines
     .AddTransient(typeof(IPipelineBehavior<,>), typeof(QueryCacheBehavior<,>));
 
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("spa", p => p
+        .WithOrigins("https://ui.localtest.me")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+});
+
 // set ConnectionStrings:Redis
 var redisCs = config.GetConnectionString("Redis");
 if (!string.IsNullOrWhiteSpace(redisCs))
@@ -95,6 +104,8 @@ app.Use(async (ctx, next) =>
     ctx.Response.Headers["Referrer-Policy"] = "no-referrer";
     await next();
 });
+
+app.UseCors("spa");
 
 // Minimal sanity routes
 app.MapGet("/health/ready", () => Results.Ok("API up"));
