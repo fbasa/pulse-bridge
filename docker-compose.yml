@@ -246,9 +246,9 @@ services:
       MSSQL_PID: "Developer"  # Free dev edition
     networks: 
       - data_net  # Internal data tier only
-      - edge_net  # Allow host access for management (dev only)
-    ports:
-      - "1433:1433"     # Allow host access for management (dev only)
+      #- edge_net  # Allow host access for management (dev only)
+    #ports:
+      #- "1433:1433"     # Allow host access for management (dev only)
     volumes:
       - mssqldata:/var/opt/mssql  
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
