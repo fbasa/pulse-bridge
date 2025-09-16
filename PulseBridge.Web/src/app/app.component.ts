@@ -12,6 +12,7 @@ import { JobPayload, SignalRService } from './services/signalr.service';
   standalone: true,
   imports: [NgIf, RouterLink, CommonModule],
   templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']  
 })
 export class AppComponent implements OnInit {
   payments: any[] | null = null;

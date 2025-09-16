@@ -1,32 +1,61 @@
-<nav class="p-3 flex gap-3 border-b">
-  <a routerLink="/home">Home</a>&nbsp;
-  <a routerLink="/protected">Protected</a>&nbsp;
-  <a href="javascript:void(0);" (click)="logout()">Logout</a>
-</nav>
+<div class="app-shell">
+  <header class="top-header">
+    <div class="brand">PulseBridge</div>
+    <nav class="nav-links">
+      <a routerLink="/home" routerLinkActive="active">Home</a>
+      <a routerLink="/protected" routerLinkActive="active">Protected</a>
+    </nav>
+    <button type="button" class="logout-btn" (click)="logout()">Logout</button>
+  </header>
 
-<p>
-  Connection status: <b>{{ connState() }}</b>
-</p>
+  <main class="content-grid">
+    <section class="panel status-panel">
+      <h2>Connection Status</h2>
+      <p class="status-indicator connected">
+        {{ connState() }}
+      </p>
+      <p class="status-hint">
+        Real-time updates from the scheduler hub appear when the connection is active.
+      </p>
+    </section>
 
-<div *ngFor="let m of messages()">
-  <b>{{ m.user }}</b>: {{ m.message }}
+    <section class="panel messages-panel">
+      <h2>Messages</h2>
+      <div *ngIf="messages().length; else noMessages" class="messages-list">
+        <article *ngFor="let m of messages()" class="message-item">
+          <span class="author">{{ m.user }}</span>
+          <span class="message">{{ m.message }}</span>
+        </article>
+      </div>
+      <ng-template #noMessages>
+        <p class="empty-state">No messages yet. Trigger an action to see live notifications.</p>
+      </ng-template>
+    </section>
+
+    <section class="panel actions-panel">
+      <h2>Angular + OpenIddict</h2>
+      <p class="panel-intro">
+        Authenticate with OpenIddict and call secured APIs using PKCE + Authorization Code flow.
+      </p>
+      <div *ngIf="auth.isLoggedIn(); else askLogin" class="actions">
+        <div class="button-row">
+          <button type="button" class="primary" (click)="loadPayments()">Call Payments API</button>
+          <button type="button" class="secondary" (click)="loadAccounting()">Call Accounting API</button>
+        </div>
+        <div class="api-results">
+          <div>
+            <h3>Payments</h3>
+            <pre class="json-output">{{ payments | json }}</pre>
+          </div>
+          <div>
+            <h3>Accounting</h3>
+            <pre class="json-output">{{ accounting | json }}</pre>
+          </div>
+        </div>
+      </div>
+      <ng-template #askLogin>
+        <button type="button" class="primary" (click)="auth.login()">Login</button>
+      </ng-template>
+    </section>
+  </main>
 </div>
-
-<section class="p-4">
-  <h1>Angular + OpenIddict (Code + PKCE)</h1>
-
-
-  <div *ngIf="auth.isLoggedIn(); else askLogin">
-
-
-    <button (click)="loadPayments()">Call Payments API</button>
-    <button (click)="loadAccounting()">Call Accounting API</button>
-    <h3>Payments</h3>
-    <pre>{{ payments | json }}</pre>
-    <h3>Accounting</h3>
-    <pre>{{ accounting | json }}</pre>
-  </div>
-  <ng-template #askLogin>
-    <button (click)="auth.login()">Login</button>
-  </ng-template>
-</section>
