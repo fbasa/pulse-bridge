@@ -6,6 +6,7 @@ PulseBridge.Web = https://ui.localtest.me/
 PulseBridge.Api = https://api.localtest.me/  
 OpenTelemetry = https://otel.localtest.me/search  
 
+![livedemoe](livedemo.png)
 ![diagram](diagram.png)
 
 https://api.localtest.me/api/jobs  
