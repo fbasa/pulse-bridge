@@ -59,7 +59,7 @@ services:
     environment:
       <<: *app-env  # Merge common .NET env
       ASPNETCORE_URLS: http://+:8080  # Listen on port 8080 in container  
-      Auth__Issuer: https://idp.localtest.me  # <-- fix
+      Auth__Issuer: https://idp.localtest.me  # idp issuer
     labels:
       # Opt-in to Traefik routing
       - traefik.enable=true  
@@ -91,7 +91,7 @@ services:
     environment:
       <<: *app-env  # Merge common .NET env
       ASPNETCORE_URLS: http://+:8080  # Listen on port 8080 in container  
-      Auth__Issuer: https://idp.localtest.me  # <-- fix
+      Auth__Issuer: https://idp.localtest.me  # idp issuer
     labels:
       # Opt-in to Traefik routing
       - traefik.enable=true  
@@ -123,7 +123,7 @@ services:
     environment:
       <<: *app-env  # Merge common .NET env
       ASPNETCORE_URLS: http://+:8080  # Listen on port 8080 in container  
-      Auth__Issuer: https://idp.localtest.me  # <-- fix
+      Auth__Issuer: https://idp.localtest.me  # idp issuer
     labels:
       # Opt-in to Traefik routing
       - traefik.enable=true  
@@ -242,9 +242,9 @@ services:
       MSSQL_PID: "Developer"  # Free dev edition
     networks: 
       - data_net  # Internal data tier only
-      #- edge_net  # Allow host access for management (dev only)
-    #ports:
-      #- "1433:1433"     # Allow host access for management (dev only)
+      - edge_net  # Allow host access for management (dev only)
+    ports:
+      - "1433:1433"     # Allow host access for management (dev only)
     volumes:
       - mssqldata:/var/opt/mssql  
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
