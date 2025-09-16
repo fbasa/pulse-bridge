@@ -1,3 +1,4 @@
+using System.Net.Http;
 using PulseBridge.Accounting.Api;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -24,6 +25,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = audience
         };
         options.RequireHttpsMetadata = true;
+        options.BackchannelHttpHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
         // Optional: map "scope" => ClaimTypes.Role etc. Keep "scope" as-is for policy checks
     });
 
@@ -55,3 +60,4 @@ app.MapGet("/health/ready", () => Results.Ok("Accounting-api up"));
 logger.Information("Accounting-API up and running!");
 
 app.Run();
+

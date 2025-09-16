@@ -1,4 +1,4 @@
-﻿version: "3.9"  
+version: "3.9"  
 
 name: pulse-bridge
 
@@ -46,7 +46,11 @@ services:
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - ./traefik/certs:/certs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro  # Read-only access to Docker events
-    networks: [edge_net, app_net]  # Reach host and internal services
+    networks:
+      edge_net: {}  # Reach host and internal services
+      app_net:
+        aliases:
+          - idp.localtest.me  # Allow containers to resolve through Traefik
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]  # Liveness probe
       interval: 10s  # How often to check
