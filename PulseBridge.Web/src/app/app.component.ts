@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
+import { HubConnectionState } from '@microsoft/signalr';
 import { JobPayload, SignalRService } from './signalr.service';
-
 
 @Component({
   selector: 'app-root',
@@ -9,12 +9,11 @@ import { JobPayload, SignalRService } from './signalr.service';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  
-  svc = inject(SignalRService);
+  readonly svc = inject(SignalRService);
 
   messages = signal<JobPayload[]>([]); // placeholder to keep type help in IDE
-  connState = signal<'disconnected' | 'connecting' | 'connected' | 'reconnecting'>('disconnected');
-
+  connState = signal<HubConnectionState>(HubConnectionState.Disconnected);
+  readonly states = HubConnectionState;
 
   ngOnInit(): void {
     this.svc.chat$.subscribe(msg => this.messages.set(msg));
@@ -29,5 +28,4 @@ export class AppComponent {
   connect(): void {
     this.svc.start();
   }
-
 }

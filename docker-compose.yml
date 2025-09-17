@@ -37,9 +37,7 @@ services:
       - --providers.docker.exposedbydefault=false  # Require explicit opt-in via labels
       - --entrypoints.websecure.address=:443  # HTTPS entrypoint
       - --providers.file.filename=/etc/traefik/dynamic.yml
-      #- --api.insecure=true  # Exposes dashboard without auth (avoid in prod)
-      #- --entrypoints.web.address=:80  # HTTP entrypoint on port 80
-      # For local HTTPS, uncomment and provide certs
+      #- --api.insecure=true  # Expose dashboard without auth (local only)
     ports:
       - "443:443"  # Expose HTTPS if configured
       #- "80:80"  # Expose HTTP from host to Traefik
@@ -47,27 +45,16 @@ services:
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - ./traefik/certs:/certs:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro  # Read-only access to Docker events
-    networks: [edge_net, app_net]  # Reach host and internal services
+    networks:
+      edge_net: {}  # Reach host and internal services
+      app_net:
+        aliases:
+          - idp.localtest.me  # Allow containers to resolve through Traefik
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]  # Liveness probe
       interval: 10s  # How often to check
       timeout: 5s  # Max time per check
       retries: 5  # Fail after N attempts
-
-  web:
-    image: pulse-bridge-web:1.0  
-    container_name: pulse-bridge-web  
-    labels:
-      - traefik.enable=true  # Opt-in to Traefik routing
-      - traefik.http.routers.websecure.rule=Host(`ui.localtest.me`)  # Route by host
-      - traefik.http.routers.websecure.entrypoints=websecure
-      - traefik.http.routers.websecure.tls=true  # Enable TLS
-      - traefik.http.routers.websecure.middlewares=gzip@file,secure-headers@file
-      - traefik.http.services.web.loadbalancer.server.port=80  # Container port
-    networks: [app_net]  # Only needs internal app net
-    depends_on: [traefik]  # Ensure proxy ready before start
-    security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
-    restart: unless-stopped  # Auto-restart for resilience
 
   api:
     image: pulse-bridge-api:1.0  
@@ -76,31 +63,49 @@ services:
       <<: *app-env  # Merge common .NET env
       ASPNETCORE_URLS: http://+:8080  
     labels:
-      - traefik.enable=true  # Opt-in to Traefik routing
+      # Opt-in to Traefik routing
+      - traefik.enable=true  
+      - traefik.docker.network=pulse-bridge_app_net
+
+      # router/service config
       - traefik.http.routers.api.rule=Host(`api.localtest.me`)  # Route by host
       - traefik.http.routers.api.entrypoints=websecure
       - traefik.http.routers.api.tls=true  # Enable TLS
-      - traefik.http.routers.api.middlewares=gzip@file,secure-headers
+      - traefik.http.routers.api.middlewares=retry-2@file,gzip@file,secure-headers@file
+
+      # load balancer service with health checks
       - traefik.http.services.api.loadbalancer.server.port=8080  # Container port
-      
-      # --- CORS middleware (for UI -> API) ---
-      - traefik.http.routers.api.middlewares=api-cors@docker  # Attach CORS middleware
-      - traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=https://ui.localtest.me  # Allowed origin
-      # Methods needed by SignalR (negotiate = POST; ws upgrade = GET; and preflight = OPTIONS)
-      - traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS  # Allow needed methods
-      # Headers SignalR typically sends (include Authorization if you use JWT)
-      - traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=Authorization,Content-Type,X-Requested-With,X-SignalR-User-Agent  # Allow headers SignalR/JWT use
-      # If you prefer, you can allow all headers instead of listing:
-      # - traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=*
-      - traefik.http.middlewares.api-cors.headers.accesscontrolallowcredentials=true  # Allow cookies/credentials
-      # Optional niceties:
-      - traefik.http.middlewares.api-cors.headers.addvaryheader=true  # Proper caching of CORS responses
-      - traefik.http.middlewares.api-cors.headers.accesscontrolmaxage=86400  # Cache preflight for a day
+      - traefik.http.services.api.loadbalancer.healthcheck.path=/health/ready
+      - traefik.http.services.api.loadbalancer.healthcheck.interval=10s
+      - traefik.http.services.api.loadbalancer.healthcheck.timeout=3s
+
     networks: [app_net, data_net]  # Internal only; fronted by Traefik
     depends_on:
       - sql  # Needs DB
       - redis  # Uses Redis for caching
       - otel-collector  # Optional: waits for OTEL
+    security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
+    restart: unless-stopped  # Auto-restart for resilience
+
+  web:
+    image: pulse-bridge-web:1.0  
+    container_name: pulse-bridge-web  
+    environment:
+      <<: *app-env  # Merge common .NET env
+      Auth__Issuer: https://idp.localtest.me  
+    labels:
+      # Opt-in to Traefik routing
+      - traefik.enable=true  
+      - traefik.docker.network=pulse-bridge_app_net
+
+      # router/service config
+      - traefik.http.routers.websecure.rule=Host(`ui.localtest.me`)  # Route by host
+      - traefik.http.routers.websecure.entrypoints=websecure
+      - traefik.http.routers.websecure.tls=true  # Enable TLS
+      - traefik.http.routers.websecure.middlewares=gzip@file,secure-headers@file
+      - traefik.http.services.web.loadbalancer.server.port=80  # Container port
+    networks: [app_net]  # Only needs internal app net
+    depends_on: [traefik]  # Ensure proxy ready before start
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  # Auto-restart for resilience
 
@@ -116,11 +121,6 @@ services:
       - redis  # Uses Redis for caching
       - otel-collector  # Optional: waits for OTEL
     networks: [app_net, data_net]  # Access app and data tiers
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]  # Probe HTTP endpoint
-      interval: 10s
-      timeout: 5s
-      retries: 10
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  # Auto-restart for resilience
 
@@ -137,11 +137,6 @@ services:
       - rabbitmq  # Publishes/consumes via broker
       - otel-collector  # Optional: waits for OTEL
     networks: [app_net, data_net]  # Needs app/data access
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]  # Probe HTTP endpoint
-      interval: 10s
-      timeout: 5s
-      retries: 10
     security_opt: ["no-new-privileges:true"]  # Drop root privileges for security
     restart: unless-stopped  # Auto-restart for resilience
   
@@ -230,4 +225,4 @@ services:
 volumes:
   mssqldata:  
   redisdata:  
-  rabbitmq_data:  
+  rabbitmq_data:

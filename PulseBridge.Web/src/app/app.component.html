@@ -1,4 +1,4 @@
-
+<!-- 
 <p>
   Connection status: <b>{{ connState() }}</b>
 </p>
@@ -6,4 +6,38 @@
 <div *ngFor="let m of messages()">
   <b>{{ m.user }}</b>: {{ m.message }}
 </div>
-<router-outlet />
+<router-outlet /> -->
+
+
+<div class="app-shell">
+
+  <main class="content-grid">
+    <section class="panel status-panel">
+      <h2>Connection Status</h2>
+      <p class="status-indicator" [class.disconnected]="connState() !== states.Connected" [class.connected]="connState() === states.Connected">
+        {{ connState() | lowercase }}
+      </p>
+      <p class="status-hint">
+        Real-time updates from the scheduler hub appear when the connection is active.
+      </p>
+    </section>
+
+    <section class="panel messages-panel">
+      <h2>Messages</h2>
+      <div *ngIf="messages().length; else noMessages" class="messages-list">
+        <article *ngFor="let m of messages()" class="message-item">
+          <span class="author">{{ m.user }}</span>
+          <span class="message">{{ m.message }}</span>
+        </article>
+      </div>
+      <ng-template #noMessages>
+        <p class="empty-state">No messages yet. Trigger an action to see live notifications.</p>
+      </ng-template>
+    </section>
+
+    <section class="panel actions-panel">
+      
+    </section>
+  </main>
+</div>
+

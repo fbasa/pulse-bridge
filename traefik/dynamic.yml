@@ -1,5 +1,17 @@
 http:
+  serversTransports:
+    backends:
+      maxIdleConnsPerHost: 64
+      forwardingTimeouts:
+        dialTimeout: 10s                 # connect to container
+        responseHeaderTimeout: 60s       # time to first byte from app
+        idleConnTimeout: 120s            # keep idle conns
   middlewares:
+    retry-2:
+      retry:
+        attempts: 2
+        initialInterval: 100ms
+        
     gzip: { compress: {} }
     secure-headers:
       headers:
