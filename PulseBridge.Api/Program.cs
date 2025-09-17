@@ -74,7 +74,7 @@ builder.Services.AddMemoryCache();
 // Output caching
 builder.Services.AddOutputCache(options =>
 {
-    // Terms listing � tag so we can evict on writes
+    // Terms listing tag so we can evict on writes
     options.AddPolicy("joblist", b => b
         .Expire(TimeSpan.FromSeconds(30))
         .Tag("jobs"));
