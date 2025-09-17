@@ -1,7 +1,7 @@
 using System.Net.Http;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using PulseBridge.Payment.Api;
+using PulseBridge.Payment.Api.Auth;
 using Serilog;
 
 var logger = new LoggerConfiguration()
@@ -15,6 +15,7 @@ builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration
 var authAuthority = builder.Configuration["Auth:Issuer"];
 var audience = "payments-api";
 
+// AuthN
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

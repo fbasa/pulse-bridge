@@ -11,6 +11,9 @@ using PulseBridge.Contracts;
 using PulseBridge.Infrastructure;
 using StackExchange.Redis;
 using Serilog;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using PulseBridge.Api.Auth;
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -21,12 +24,55 @@ var config = builder.Configuration;
 
 builder.Host.UseSerilog((ctx, lc) => lc.ReadFrom.Configuration(ctx.Configuration));
 
+var authAuthority = builder.Configuration["Auth:Issuer"];
+var audience = "accounting-api";
+
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddSingleton<IJobQueueRepository, JobQueueRepository>();
 
-// MVC (controllers)
+// AuthN
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = authAuthority;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = true,
+            ValidAudience = audience
+        };
+        options.RequireHttpsMetadata = true;
+        options.BackchannelHttpHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+
+        // Important: allow token via query for WebSockets (SignalR client uses this)
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                var path = ctx.HttpContext.Request.Path;
+                // Adjust if your hub path differs
+                if (path.StartsWithSegments("/hubs/schedulerHub") &&
+                    ctx.Request.Query.TryGetValue("access_token", out var token))
+                { ctx.Token = token; }
+                return Task.CompletedTask;
+            }
+        };
+        // Optional: map "scope" => ClaimTypes.Role etc. Keep "scope" as-is for policy checks
+    });
+
+builder.Services.AddScopePolicies();
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = null);
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("spa", p => p
+        .WithOrigins("https://ui.localtest.me")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+});
 
 // SignalR
 builder.Services.AddSignalR();
@@ -36,15 +82,6 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<Program>())
     // MediatR pipelines
     .AddTransient(typeof(IPipelineBehavior<,>), typeof(QueryCacheBehavior<,>));
-
-builder.Services.AddCors(opt =>
-{
-    opt.AddPolicy("spa", p => p
-        .WithOrigins("https://ui.localtest.me")
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials());
-});
 
 // set ConnectionStrings:Redis
 var redisCs = config.GetConnectionString("Redis");
@@ -106,20 +143,23 @@ app.Use(async (ctx, next) =>
 });
 
 app.UseCors("spa");
+app.UseAuthentication();
+app.UseAuthorization();
+
+
+//app.MapPost("/api/external/send", async ([FromBody] JobPayload payload, IHubContext<SchedulerHub, ISchedulerClient> hub) =>
+//{
+//   await hub.Clients.All.ReceiveMessage("signalr-user", payload.Message);
+//   return Results.Ok("sent");
+//});
+
+app.MapControllers();
 
 // Minimal sanity routes
 app.MapGet("/health/ready", () => Results.Ok("API up"));
 
-app.MapPost("/api/external/send", async ([FromBody] JobPayload payload, IHubContext<SchedulerHub, ISchedulerClient> hub) =>
-{
-    await hub.Clients.All.ReceiveMessage("signalr-user", payload.Message);
-    return Results.Ok("sent");
-});
-
-app.MapControllers();
-
 // Map the hub and explicitly require CORS
-app.MapHub<SchedulerHub>("/hubs/schedulerHub");
+app.MapHub<SchedulerHub>("/hubs/schedulerHub").RequireAuthorization("accounting.read");//TODO
 
 logger.Information("SignalR-API up and running!");
 

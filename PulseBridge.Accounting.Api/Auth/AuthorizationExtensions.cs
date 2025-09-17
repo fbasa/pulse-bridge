@@ -1,6 +1,4 @@
-using PulseBridge.Accounting.Api.Auth;
-
-namespace PulseBridge.Accounting.Api;
+namespace PulseBridge.Accounting.Api.Auth;
 
 public static class AuthorizationExtensions
 {

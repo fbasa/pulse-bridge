@@ -159,6 +159,7 @@ services:
     environment:
       <<: *app-env  # Merge common .NET env
       ASPNETCORE_URLS: http://+:8080  
+      Auth__Issuer: https://idp.localtest.me  # idp issuer
     labels:
       # Opt-in to Traefik routing
       - traefik.enable=true  

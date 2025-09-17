@@ -27,7 +27,7 @@ export class AppComponent implements OnInit {
 
     this.signalrApi.chat$.subscribe(msg => this.messages.set(msg));
     this.signalrApi.connectionState$.subscribe(state => this.connState.set(state));
-    this.connect();
+    await this.connect();
 
     this.loadPayments(); 
     this.loadAccounting();
@@ -46,8 +46,8 @@ export class AppComponent implements OnInit {
     this.signalrApi.stop();
   }
 
-  connect(): void {
-    this.signalrApi.start();
+  async connect(): Promise<void> {
+    await this.signalrApi.start();
   }
 
 }

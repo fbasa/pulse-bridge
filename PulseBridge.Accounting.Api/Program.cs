@@ -1,8 +1,8 @@
 using System.Net.Http;
-using PulseBridge.Accounting.Api;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using PulseBridge.Accounting.Api.Auth;
 
 var logger = new LoggerConfiguration()
     .WriteTo.Console()
