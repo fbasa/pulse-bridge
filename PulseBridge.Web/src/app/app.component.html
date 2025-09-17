@@ -11,8 +11,8 @@
   <main class="content-grid">
     <section class="panel status-panel">
       <h2>Connection Status</h2>
-      <p class="status-indicator connected">
-        {{ connState() }}
+      <p class="status-indicator"  [class.disconnected]="!isConnected()" [class.connected]="isConnected()">
+        {{ connState() | lowercase }}
       </p>
       <p class="status-hint">
         Real-time updates from the scheduler hub appear when the connection is active.

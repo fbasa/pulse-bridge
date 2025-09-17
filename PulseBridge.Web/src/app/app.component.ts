@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from './auth/auth.service';
@@ -40,6 +40,8 @@ export class AppComponent implements OnInit {
   messages = signal<JobPayload[]>([]); // placeholder to keep type help in IDE
   connState = signal<'disconnected' | 'connecting' | 'connected' | 'reconnecting'>('disconnected');
 
+  readonly isConnected = computed(() => this.connState() === 'connected');
+
   ngOnDestroy(): void {
     this.signalrApi.stop();
   }
@@ -49,3 +51,4 @@ export class AppComponent implements OnInit {
   }
 
 }
+
