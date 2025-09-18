@@ -1,4 +1,4 @@
-<div class="app-shell">
+﻿<div class="app-shell">
   <header class="top-header">
     <div class="brand">PulseBridge</div>
     <nav class="nav-links">
@@ -14,6 +14,7 @@
       <p class="status-indicator"  [class.disconnected]="!isConnected()" [class.connected]="isConnected()">
         {{ connState() | lowercase }}
       </p>
+      <button *ngIf="isDisconnected()" type="button" class="primary" (click)="connect()">Retry</button>
       <p class="status-hint">
         Real-time updates from the scheduler hub appear when the connection is active.
       </p>
@@ -59,3 +60,4 @@
     </section>
   </main>
 </div>
+

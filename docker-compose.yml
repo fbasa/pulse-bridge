@@ -213,6 +213,10 @@ services:
     environment: 
       <<: *app-env  # Reuse common .NET env
       App__SendAndReceiveUrl: http://api:8080/api/external/send  # SignalR endpoint
+      OAuth__TokenEndpoint: https://idp.localtest.me/connect/token
+      OAuth__ClientId: jobs-worker
+      OAuth__ClientSecret: super-secret-worker        # use a compose secret in prod
+      OAuth__Scope: accounting.write payments.write
     depends_on:
       - rabbitmq  # Needs broker to connect
       - api  # Talks to API/SignalR

@@ -16,7 +16,8 @@ function delay(ms: number) {
   return new Promise(res => setTimeout(res, ms));
 }
 
-async function startWithCap(conn: HubConnection) : Promise<boolean> {
+// Try starting the connection with MAX_START_TRIES and backoff
+async function startWithRetry(conn: HubConnection) : Promise<boolean> {
   for (let attempt = 1; attempt <= MAX_START_TRIES; attempt++) {
     try {
       await conn.start();
@@ -72,7 +73,7 @@ export class SignalRService {
     this.connection.onreconnected(() => this.zone.run(() => this.state$.next('connected')));
     this.connection.onclose(() => this.zone.run(() => this.state$.next('disconnected')));
 
-    await startWithCap(this.connection)
+    await startWithRetry(this.connection)
       .then((result) => {
         if (result) {
           console.log('SignalR connected');

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using PulseBridge.Api.SignalR;
 using PulseBridge.Contracts;
@@ -9,6 +10,7 @@ namespace PulseBridge.Api.Controllers;
 public class ExternalController(IHubContext<SchedulerHub, ISchedulerClient> hub) : Controller
 {
     [HttpPost("send")]
+    //[Authorize]
     public async Task<IActionResult> SendPayloadAsync([FromBody] JobPayload payload)
     {
         await hub.Clients.All.ReceiveMessage("signalr-user", payload.Message);

@@ -1,4 +1,4 @@
-﻿using OpenIddict.Abstractions;
+using OpenIddict.Abstractions;
 
 namespace PulseBridge.OpenIddict.Idp.ServerHosting;
 
@@ -26,15 +26,17 @@ public class OAuthSeed : IHostedService
                 Permissions =
                 {
                     // endpoints + flows
-                    OpenIddictConstants.Permissions.Endpoints.Authorization,
-                    OpenIddictConstants.Permissions.Endpoints.Token,
-                    OpenIddictConstants.Permissions.Endpoints.EndSession,
-                    OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
-                    OpenIddictConstants.Permissions.ResponseTypes.Code,
+                    OpenIddictConstants.Permissions.Endpoints.Authorization, // to get auth code
+                    OpenIddictConstants.Permissions.Endpoints.Token, // to get tokens
+                    OpenIddictConstants.Permissions.Endpoints.EndSession, // logout
+                    OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, // auth code flow
+                    OpenIddictConstants.Permissions.ResponseTypes.Code, // response_type=code
+                    OpenIddictConstants.Permissions.GrantTypes.RefreshToken,    // allow refresh tokens
 
                     // scopes the SPA may request
                     OpenIddictConstants.Permissions.Scopes.Profile,
                     OpenIddictConstants.Permissions.Scopes.Email,
+                    OpenIddictConstants.Scopes.OfflineAccess, // for refresh tokens
                     OpenIddictConstants.Permissions.Prefixes.Scope + "payments.read",
                     OpenIddictConstants.Permissions.Prefixes.Scope + "accounting.read"
                 },
@@ -47,6 +49,7 @@ public class OAuthSeed : IHostedService
             await apps.CreateAsync(new OpenIddictApplicationDescriptor
             {
                 ClientId = "mvc-client",
+                ClientSecret = "super-secret-mvc",
                 ConsentType = OpenIddictConstants.ConsentTypes.Explicit,
                 DisplayName = "MVC Web App",
                 RedirectUris = { new Uri("https://localhost:7141/signin-oidc") },
@@ -59,10 +62,12 @@ public class OAuthSeed : IHostedService
                     OpenIddictConstants.Permissions.Endpoints.EndSession,
                     OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
                     OpenIddictConstants.Permissions.ResponseTypes.Code,
-
+                    OpenIddictConstants.Permissions.GrantTypes.RefreshToken,    // allow refresh tokens
+                    
                     // scopes the SPA may request
                     OpenIddictConstants.Permissions.Scopes.Profile,
                     OpenIddictConstants.Permissions.Scopes.Email,
+                    OpenIddictConstants.Scopes.OfflineAccess, // for refresh tokens
                     OpenIddictConstants.Permissions.Prefixes.Scope + "payments.read",
                     OpenIddictConstants.Permissions.Prefixes.Scope + "accounting.read"
                 },

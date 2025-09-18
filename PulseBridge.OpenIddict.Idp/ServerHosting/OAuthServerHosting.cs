@@ -24,10 +24,10 @@ public static class OAuthServerHosting
                        .SetUserInfoEndpointUris("/connect/userinfo")
                        .SetEndSessionEndpointUris("/connect/logout");
 
-                // Flows
+                // Authorization Code Flow with PKCE (Proof Key for Code Exchange)
                 options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();     // PKCE for public clients
-                options.AllowClientCredentialsFlow();
-                options.AllowRefreshTokenFlow();
+                options.AllowClientCredentialsFlow(); // Machine to machine
+                options.AllowRefreshTokenFlow();    // Allow using refresh tokens
 
                 // Scopes (Duende IdentityResources -> OpenIddict scopes)
                 options.RegisterScopes(
@@ -35,9 +35,15 @@ public static class OAuthServerHosting
                     OpenIddictConstants.Scopes.Profile,
                     OpenIddictConstants.Scopes.Email,
                     OpenIddictConstants.Scopes.Roles,
+                    OpenIddictConstants.Scopes.OfflineAccess, // for refresh tokens
                     "payments.read", "payments.write",
                     "accounting.read", "accounting.write"
                 );
+
+                 // === Lifetimes (Config driven) ===
+                options.SetAccessTokenLifetime(TimeSpan.FromMinutes(5));  // API tokens
+                options.SetIdentityTokenLifetime(TimeSpan.FromMinutes(5));    // ID tokens
+                options.SetRefreshTokenLifetime(TimeSpan.FromDays(30));      // Refresh tokens
 
                 // Issue JWT access tokens that resource APIs can validate via JwtBearer
                 options.DisableAccessTokenEncryption();

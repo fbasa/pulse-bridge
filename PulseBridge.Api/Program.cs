@@ -38,7 +38,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,
-            ValidAudience = audience
+            ValidAudience = audience,
+            ClockSkew = TimeSpan.FromSeconds(30)
         };
         options.RequireHttpsMetadata = true;
         options.BackchannelHttpHandler = new HttpClientHandler

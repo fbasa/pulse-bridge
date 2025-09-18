@@ -41,6 +41,7 @@ export class AppComponent implements OnInit {
   connState = signal<'disconnected' | 'connecting' | 'connected' | 'reconnecting'>('disconnected');
 
   readonly isConnected = computed(() => this.connState() === 'connected');
+  readonly isDisconnected = computed(() => this.connState() === 'disconnected');
 
   ngOnDestroy(): void {
     this.signalrApi.stop();
